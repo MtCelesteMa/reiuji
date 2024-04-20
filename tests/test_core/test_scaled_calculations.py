@@ -1,4 +1,4 @@
-"""Tests for the `scaled_calculations` module."""
+"""Tests for the `core.scaled_calculations` module."""
 
 from reiuji.core.scaled_calculations import multiply, divide
 

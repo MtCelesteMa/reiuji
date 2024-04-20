@@ -3,4 +3,4 @@
 from . import models
 from . import multi_sequence
 from . import scaled_calculations
-from . import placement_rule
+from . import placement_rules
