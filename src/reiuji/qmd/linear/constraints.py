@@ -171,3 +171,29 @@ class BeamFocusConstraint(core.constraints.Constraint):
         target_focus = round(self.target_focus * core.scaled_calculations.SCALE_FACTOR)
         focus = calculations.BeamFocus(self.charge, self.beam_strength, self.scaling_factor, self.initial_focus).to_model(model, seq, components)
         model.Add(focus >= target_focus)
+
+
+class EnergyConstraint(core.constraints.Constraint):
+    """Ensures that the beam exists with an energy greater than a desired value."""
+    def __init__(self, minimum_energy: int, maximum_energy: int, charge: float) -> None:
+        self.minimum_energy = minimum_energy
+        self.maximum_energy = maximum_energy
+        self.charge = charge
+    
+    def is_satisfied(self, seq: MultiSequence[MultiblockComponent]) -> bool:
+        raise NotImplementedError("EnergyConstraint.is_satisfied is not implemented.")
+    
+    def to_model(
+        self,
+        model: cp_model.CpModel,
+        seq: core.multi_sequence.MultiSequence[cp_model.IntVar],
+        components: list[core.models.MultiblockComponent]
+    ) -> None:
+        charge = round(self.charge * core.scaled_calculations.SCALE_FACTOR)
+        voltage = calculations.TotalVoltage().to_model(model, seq, components)
+        energy_ = model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4()))
+        model.AddMultiplicationEquality(energy_, [voltage, charge])
+        energy = model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4()))
+        model.AddDivisionEquality(energy, energy_, core.scaled_calculations.SCALE_FACTOR)
+        model.Add(energy >= self.minimum_energy)
+        model.Add(energy <= self.maximum_energy)

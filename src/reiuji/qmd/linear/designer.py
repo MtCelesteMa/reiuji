@@ -12,12 +12,14 @@ class LinearAcceleratorDesigner(core.designer.Designer):
     def __init__(
             self,
             length: int,
+            minimum_energy: int,
+            maximum_energy: int,
             target_focus: float,
+            *,
             charge: float,
             beam_strength: int,
             scaling_factor: int = 10000,
             initial_focus: float = 0.0,
-            *,
             heat_neutral: bool = True,
             y_symmetry: bool = False,
             z_symmetry: bool = False,
@@ -25,6 +27,8 @@ class LinearAcceleratorDesigner(core.designer.Designer):
             component_limits: dict[str, tuple[int, int]] | None = None
     ) -> None:
         self.length = length
+        self.minimum_energy = minimum_energy
+        self.maximum_energy = maximum_energy
         self.target_focus = target_focus
         self.charge = charge
         self.beam_strength = beam_strength
@@ -53,7 +57,7 @@ class LinearAcceleratorDesigner(core.designer.Designer):
         for component, (min_, max_) in self.component_limits.items():
             core.constraints.QuantityConstraint(component, max_, min_).to_model(model, seq, self.components)
         constraints.BeamFocusConstraint(self.target_focus, self.charge, self.beam_strength, self.scaling_factor, self.initial_focus).to_model(model, seq, self.components)
-        model.Maximize(calculations.TotalVoltage().to_model(model, seq, self.components))
+        constraints.EnergyConstraint(self.minimum_energy, self.maximum_energy, self.charge).to_model(model, seq, self.components)
         
         solver = cp_model.CpSolver()
         if isinstance(timeout, float):

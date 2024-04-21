@@ -15,11 +15,13 @@ authors = [
 ]
 description = "A library for designing NuclearCraft multiblocks."
 readme = "README.md"
+license = {file = "LICENSE"}
 keywords = ["nuclearcraft", "multiblock", "design", "minecraft"]
 classifiers = [
     "Development Status :: 2 - Pre-Alpha",
     "Intended Audience :: Other Audience",
     "Topic :: Games/Entertainment",
+    "License :: OSI Approved :: Apache Software License",
     "Programming Language :: Python :: 3.12"
 ]
 
