@@ -27,8 +27,8 @@ COMPONENTS = [
 def test_casing_constraint() -> None:
     seq1 = MultiSequence([COMPONENTS[0], COMPONENTS[0], COMPONENTS[0], COMPONENTS[0], COMPONENTS[1], COMPONENTS[0], COMPONENTS[0], COMPONENTS[0], COMPONENTS[0]], (3, 3))
     seq2 = MultiSequence([COMPONENTS[0], COMPONENTS[1], COMPONENTS[0], COMPONENTS[0], COMPONENTS[1], COMPONENTS[0], COMPONENTS[0], COMPONENTS[0], COMPONENTS[0]], (3, 3))
-    assert CasingConstraint(COMPONENTS[0]).is_satisfied(seq1)
-    assert not CasingConstraint(COMPONENTS[0]).is_satisfied(seq2)
+    assert CasingConstraint().is_satisfied(seq1)
+    assert not CasingConstraint().is_satisfied(seq2)
 
 
 def test_symmetry_constraint() -> None:
@@ -38,7 +38,7 @@ def test_symmetry_constraint() -> None:
 
 
 CONSTRAINTS = [
-    CasingConstraint(COMPONENTS[0]),
+    CasingConstraint(),
     PlacementRuleConstraint(),
     SymmetryConstraint(0),
     SymmetryConstraint(1),
