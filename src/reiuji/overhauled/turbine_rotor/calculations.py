@@ -8,7 +8,7 @@ import uuid
 from ortools.sat.python import cp_model
 
 
-class TurbineRotorExpansion:
+class TurbineRotorExpansion(core.calculations.SequenceCalculation):
     """Calculates the expansion of a turbine rotor configuration."""
     def __call__(self, seq: core.multi_sequence.MultiSequence[core.models.MultiblockComponent]) -> list[float]:
         total_expansion_level = 1.0
@@ -43,7 +43,7 @@ class TurbineRotorExpansion:
         return expansion_levels
 
 
-class TurbineRotorEfficiency:
+class TurbineRotorEfficiency(core.calculations.Calculation):
     """Calculates the efficiency of a turbine rotor configuration."""
     def __init__(self, optimal_expansion: float) -> None:
         self.optimal_expansion = optimal_expansion

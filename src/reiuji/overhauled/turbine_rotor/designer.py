@@ -8,7 +8,7 @@ import uuid
 from ortools.sat.python import cp_model
 
 
-class TurbineRotorDesigner:
+class TurbineRotorDesigner(core.designer.Designer):
     def __init__(
             self,
             length: int,
