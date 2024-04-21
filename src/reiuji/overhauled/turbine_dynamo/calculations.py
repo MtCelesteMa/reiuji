@@ -8,7 +8,7 @@ import uuid
 from ortools.sat.python import cp_model
 
 
-class TurbineDynamoConductivity(core.calculations.Calculation):
+class TurbineDynamoConductivity:
     """Calculates the conductivity of a turbine dynamo configuration."""
     def __call__(self, seq: core.multi_sequence.MultiSequence[core.models.MultiblockComponent]) -> float:
         coil_count = 0
