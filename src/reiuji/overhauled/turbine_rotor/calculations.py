@@ -86,9 +86,9 @@ class TurbineRotorEfficiency:
             model.AddElement(seq[i], efficiencies, raw_efficiency)
 
             multiplier_a = model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4()))
-            model.AddDivisionEquality(multiplier_a, ideal_expansion, expansions[i])
+            core.scaled_calculations.divide(model, multiplier_a, ideal_expansion, expansions[i])
             multiplier_b = model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4()))
-            model.AddDivisionEquality(multiplier_b, expansions[i], ideal_expansion)
+            core.scaled_calculations.divide(model, multiplier_b, expansions[i], ideal_expansion)
             multiplier = model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4()))
             model.AddMinEquality(multiplier, [multiplier_a, multiplier_b])
 
@@ -105,5 +105,5 @@ class TurbineRotorEfficiency:
 
         final_efficiency = model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4()))
         model.AddDivisionEquality(final_efficiency, efficiency, n_blades)
-        return efficiency
+        return final_efficiency
 
