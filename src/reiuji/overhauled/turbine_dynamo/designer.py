@@ -16,13 +16,15 @@ class TurbineDynamoDesigner(core.designer.Designer):
             shaft_width: int = 1,
             x_symmetry: bool = False,
             y_symmetry: bool = False,
-            components: list[core.models.MultiblockComponent] | None = None
+            components: list[core.models.MultiblockComponent] | None = None,
+            component_limits: dict[str, tuple[int, int]] | None = None
     ) -> None:
         self.side_length = side_length
         self.shaft_width = shaft_width
         self.x_symmetry = x_symmetry
         self.y_symmetry = y_symmetry
         self.components = components if not isinstance(components, type(None)) else models.DEFAULT_COMPONENTS
+        self.component_limits = component_limits if not isinstance(component_limits, type(None)) else dict()
     
     def design(self, *, timeout: float | None = None) -> core.multi_sequence.MultiSequence[core.models.MultiblockComponent] | None:
         model = cp_model.CpModel()
@@ -34,6 +36,8 @@ class TurbineDynamoDesigner(core.designer.Designer):
             core.constraints.SymmetryConstraint(1).to_model(model, seq, self.components)
         if self.y_symmetry:
             core.constraints.SymmetryConstraint(0).to_model(model, seq, self.components)
+        for component, (min_, max_) in self.component_limits.items():
+            core.constraints.QuantityConstraint(component, max_, min_).to_model(model, seq, self.components)
         model.Maximize(calculations.TurbineDynamoConductivity().to_model(model, seq, self.components))
 
         solver = cp_model.CpSolver()

@@ -134,3 +134,28 @@ class SymmetryConstraint(Constraint):
             idx = seq.index_int_to_tuple(i)
             mirror_idx = (idx[:self.axis] + (seq.shape[self.axis] - 1 - idx[self.axis],) + idx[self.axis + 1:])
             model.Add(component == seq[mirror_idx])
+
+
+class QuantityConstraint(Constraint):
+    """Limits the number of a specific component type in the sequence."""
+    def __init__(self, component_full_name: str, max_quantity: int, min_quantity: int = 0) -> None:
+        self.component_full_name = component_full_name
+        self.max_quantity = max_quantity
+        self.min_quantity = min_quantity
+    
+    def is_satisfied(self, seq: multi_sequence.MultiSequence[models.MultiblockComponent]) -> bool:
+        return sum([1 for component in seq if component.full_name == self.component_full_name]) <= self.max_quantity
+    
+    def to_model(
+        self,
+        model: cp_model.CpModel,
+        seq: multi_sequence.MultiSequence[cp_model.IntVar],
+        components: list[models.MultiblockComponent]
+    ) -> None:
+        component_id = [component.full_name for component in components].index(self.component_full_name)
+        is_equal = [model.NewBoolVar(str(uuid.uuid4())) for _ in seq]
+        for i, component in enumerate(seq):
+            model.Add(component == component_id).OnlyEnforceIf(is_equal[i])
+            model.Add(component != component_id).OnlyEnforceIf(is_equal[i].Not())
+        model.Add(sum(is_equal) >= self.min_quantity)
+        model.Add(sum(is_equal) <= self.max_quantity)

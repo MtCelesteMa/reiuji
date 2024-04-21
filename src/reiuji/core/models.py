@@ -11,4 +11,4 @@ class MultiblockComponent(pydantic.BaseModel):
 
     @property
     def full_name(self) -> str:
-        return f"{self.type}__{self.name}"
+        return f"{self.name}__{self.type}"
