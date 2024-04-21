@@ -43,17 +43,14 @@ class Constraint:
 
 class CasingConstraint(Constraint):
     """Ensures that casing blocks are placed at the exterior of the sequence."""
-    def __init__(self, casing: models.MultiblockComponent):
-        self.casing = casing
-    
     def is_satisfied(self, seq: multi_sequence.MultiSequence[models.MultiblockComponent]) -> bool:
         for i, component in enumerate(seq):
             idx = seq.index_int_to_tuple(i)
             if any([idx_ == 0 for idx_, dim in zip(idx, seq.shape)]) or any([idx_ == dim - 1 for idx_, dim in zip(idx, seq.shape)]):
-                if component != self.casing:
+                if component.type != "casing":
                     return False
             else:
-                if component == self.casing:
+                if component.type == "casing":
                     return False
         return True
     
@@ -63,13 +60,19 @@ class CasingConstraint(Constraint):
         seq: multi_sequence.MultiSequence[cp_model.IntVar],
         components: list[models.MultiblockComponent]
     ) -> None:
+        type_to_id = dict()
+        for i, component in enumerate(components):
+            if component.type not in type_to_id:
+                type_to_id[component.type] = [i]
+            else:
+                type_to_id[component.type].append(i)
+        casing_ids = type_to_id["casing"]
         for i, component in enumerate(seq):
             idx = seq.index_int_to_tuple(i)
             if any([idx_ == 0 or idx_ == dim - 1 for idx_, dim in zip(idx, seq.shape)]):
-                model.Add(component == components.index(self.casing))
+                model.AddAllowedAssignments([component], [(casing_id,) for casing_id in casing_ids])
             else:
-                model.Add(component != components.index(self.casing))
-
+                model.AddForbiddenAssignments([component], [(casing_id,) for casing_id in casing_ids])
 
 class PlacementRuleConstraint(Constraint):
     """Ensures that all placement rules are satisfied."""

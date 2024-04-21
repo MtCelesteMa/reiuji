@@ -27,7 +27,7 @@ class TurbineDynamoDesigner:
     def design(self, *, timeout: float | None = None) -> core.multi_sequence.MultiSequence[core.models.MultiblockComponent]:
         model = cp_model.CpModel()
         seq = core.multi_sequence.MultiSequence([model.NewIntVar(0, len(self.components) - 1, str(uuid.uuid4())) for i in range((self.side_length + 2) ** 2)], (self.side_length + 2, self.side_length + 2))
-        core.constraints.CasingConstraint(core.models.MultiblockComponent(name="", type="casing", short_name="X ")).to_model(model, seq, self.components)
+        core.constraints.CasingConstraint().to_model(model, seq, self.components)
         core.constraints.PlacementRuleConstraint().to_model(model, seq, self.components)
         constraints.CenteredBearingConstraint(self.shaft_width).to_model(model, seq, self.components)
         if self.x_symmetry:

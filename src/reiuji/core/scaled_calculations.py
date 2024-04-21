@@ -5,7 +5,7 @@ import uuid
 from ortools.sat.python import cp_model
 
 
-SCALE_FACTOR = 100
+SCALE_FACTOR = 1000
 
 
 def multiply(model: cp_model.CpModel, a: cp_model.IntVar | int, b: cp_model.IntVar | int) -> cp_model.IntVar:
