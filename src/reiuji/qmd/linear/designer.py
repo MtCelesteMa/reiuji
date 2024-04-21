@@ -58,6 +58,7 @@ class LinearAcceleratorDesigner(core.designer.Designer):
             core.constraints.QuantityConstraint(component, max_, min_).to_model(model, seq, self.components)
         constraints.BeamFocusConstraint(self.target_focus, self.charge, self.beam_strength, self.scaling_factor, self.initial_focus).to_model(model, seq, self.components)
         constraints.EnergyConstraint(self.minimum_energy, self.maximum_energy, self.charge).to_model(model, seq, self.components)
+        model.Minimize(calculations.PowerRequirement().to_model(model, seq, self.components))
         
         solver = cp_model.CpSolver()
         if isinstance(timeout, float):

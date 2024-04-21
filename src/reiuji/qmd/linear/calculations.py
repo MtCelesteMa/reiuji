@@ -159,3 +159,58 @@ class BeamFocus(core.calculations.Calculation):
         final_focus = model.NewIntVar(cp_model.INT32_MIN, cp_model.INT32_MAX, str(uuid.uuid4()))
         model.Add(final_focus == initial_focus + focus_gain - focus_loss)
         return final_focus
+
+
+class PowerRequirement(core.calculations.Calculation):
+    def __call__(self, seq: core.multi_sequence.MultiSequence[core.models.MultiblockComponent]) -> float:
+        efficiency = 0.0
+        parts = 0
+        raw_power = 0
+        for x in range(seq.shape[0]):
+            if isinstance(seq[x, 1, 2], (models.Cavity, models.Magnet)):
+                raw_power += seq[x, 1, 2].power
+                efficiency += seq[x, 1, 2].efficiency
+                parts += 1
+        return raw_power / (efficiency / parts)
+    
+    def to_model(
+            self,
+            model: cp_model.CpModel,
+            seq: core.multi_sequence.MultiSequence[cp_model.IntVar],
+            components: list[core.models.MultiblockComponent]
+    ) -> cp_model.IntVar:
+        type_to_id = dict()
+        for i, component in enumerate(components):
+            if component.type not in type_to_id:
+                type_to_id[component.type] = [i]
+            else:
+                type_to_id[component.type].append(i)
+        powers = [component.power if isinstance(component, (models.Cavity, models.Magnet)) else 0 for component in components]
+        efficiencies = [round(component.efficiency * core.scaled_calculations.SCALE_FACTOR) if isinstance(component, (models.Cavity, models.Magnet)) else 0 for component in components]
+        is_part = [1 if isinstance(component, (models.Cavity, models.Magnet)) else 0 for component in components]
+
+        raw_power_contrib = [model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4())) for _ in range(seq.shape[0])]
+        efficiency_contrib = [model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4())) for _ in range(seq.shape[0])]
+        is_part_ = [model.NewBoolVar(str(uuid.uuid4())) for _ in range(seq.shape[0])]
+        for x in range(seq.shape[0]):
+            model.AddElement(seq[x, 1, 2], powers, raw_power_contrib[x])
+            model.AddElement(seq[x, 1, 2], efficiencies, efficiency_contrib[x])
+            model.AddElement(seq[x, 1, 2], is_part, is_part_[x])
+        
+        raw_power = model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4()))
+        efficiency = model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4()))
+        parts = model.NewIntVar(1, cp_model.INT32_MAX, str(uuid.uuid4()))
+        model.Add(raw_power == sum(raw_power_contrib))
+        model.Add(efficiency == sum(efficiency_contrib))
+        model.Add(parts == sum(is_part_))
+
+        reduced_efficiency = model.NewIntVar(1, cp_model.INT32_MAX, str(uuid.uuid4()))
+        model.AddDivisionEquality(reduced_efficiency, efficiency, parts)
+
+        raw_power_ = model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4()))
+        model.AddMultiplicationEquality(raw_power_, raw_power, core.scaled_calculations.SCALE_FACTOR)
+
+        power_requirement = model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4()))
+        model.AddDivisionEquality(power_requirement, raw_power_, reduced_efficiency)
+
+        return power_requirement

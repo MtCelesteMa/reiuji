@@ -189,11 +189,11 @@ class EnergyConstraint(core.constraints.Constraint):
         seq: core.multi_sequence.MultiSequence[cp_model.IntVar],
         components: list[core.models.MultiblockComponent]
     ) -> None:
-        charge = round(self.charge * core.scaled_calculations.SCALE_FACTOR)
+        charge = round(self.charge * 3)
         voltage = calculations.TotalVoltage().to_model(model, seq, components)
         energy_ = model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4()))
         model.AddMultiplicationEquality(energy_, [voltage, charge])
         energy = model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4()))
-        model.AddDivisionEquality(energy, energy_, core.scaled_calculations.SCALE_FACTOR)
+        model.AddDivisionEquality(energy, energy_, 3)
         model.Add(energy >= self.minimum_energy)
         model.Add(energy <= self.maximum_energy)
