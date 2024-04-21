@@ -65,7 +65,7 @@ class CasingConstraint(Constraint):
     ) -> None:
         for i, component in enumerate(seq):
             idx = seq.index_int_to_tuple(i)
-            if any([idx_ == 0 for idx_, dim in zip(idx, seq.shape)]) or any([idx_ == dim - 1 for idx_, dim in zip(idx, seq.shape)]):
+            if any([idx_ == 0 or idx_ == dim - 1 for idx_, dim in zip(idx, seq.shape)]):
                 model.Add(component == components.index(self.casing))
             else:
                 model.Add(component != components.index(self.casing))
@@ -109,6 +109,7 @@ class PlacementRuleConstraint(Constraint):
 
 
 class SymmetryConstraint(Constraint):
+    """Ensures that the sequence is symmetric along the given axis."""
     def __init__(self, axis: int) -> None:
         self.axis = axis
 
