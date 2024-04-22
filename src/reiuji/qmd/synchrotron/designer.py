@@ -1,7 +1,7 @@
 """Designer for QMD synchrotrons."""
 
 from ... import core
-from . import models, constraints
+from . import models, constraints, calculations
 
 import uuid
 
@@ -12,11 +12,23 @@ class SynchrotronDesigner(core.designer.Designer):
     def __init__(
             self,
             side_length: int,
+            minimum_energy: int,
+            maximum_energy: int,
             *,
+            charge: float,
+            mass: float,
+            heat_neutral: bool = True,
+            internal_symmetry: bool = False,
             components: list[core.models.MultiblockComponent] | None = None,
             component_limits: dict[str, tuple[int, int]] | None = None
     ) -> None:
         self.side_length = side_length
+        self.minimum_energy = minimum_energy
+        self.maximum_energy = maximum_energy
+        self.charge = charge
+        self.mass = mass
+        self.heat_neutral = heat_neutral
+        self.internal_symmetry = internal_symmetry
         self.components = components if not isinstance(components, type(None)) else models.DEFAULT_COMPONENTS
         self.component_limits = component_limits if not isinstance(component_limits, type(None)) else dict()
     
@@ -27,7 +39,14 @@ class SynchrotronDesigner(core.designer.Designer):
         constraints.CasingConstraint().to_model(model, seq, self.components)
         constraints.BeamConstraint().to_model(model, seq, self.components)
         constraints.AirConstraint().to_model(model, seq, self.components)
+        constraints.CavityConstraint().to_model(model, seq, self.components)
         constraints.MagnetConstraint().to_model(model, seq, self.components)
+        core.constraints.PlacementRuleConstraint().to_model(model, seq, self.components)
+        if self.heat_neutral:
+            constraints.HeatNeutralConstraint().to_model(model, seq, self.components)
+        if self.internal_symmetry:
+            constraints.InnerSymmetryConstraint().to_model(model, seq, self.components)
+        constraints.EnergyConstraint(self.minimum_energy, self.maximum_energy, self.charge, (seq.shape[0] - 4) / 2, self.mass).to_model(model, seq, self.components)
         for component, (min_, max_) in self.component_limits.items():
             core.constraints.QuantityConstraint(component, max_, min_).to_model(model, seq, self.components)
 

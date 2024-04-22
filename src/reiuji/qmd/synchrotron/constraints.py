@@ -1,9 +1,10 @@
 """Constraints specific to the QMD synchrotron designer."""
 
 from ... import core
-from . import models
+from . import models, calculations
 
 import uuid
+import itertools
 
 from ortools.sat.python import cp_model
 
@@ -157,6 +158,112 @@ class AirConstraint(core.constraints.Constraint):
                 for z in range(seq.shape[1]):
                     if 5 <= x <= (seq.shape[0] - 6) and 5 <= z <= (seq.shape[1] - 6):
                         model.AddAllowedAssignments([seq[x, z, y]], [(air_id,) for air_id in air_ids])
+
+
+class CavityConstraint(core.constraints.Constraint):
+    """Ensures that cavities are placed properly around the beam."""
+    def is_satisfied(self, seq: core.multi_sequence.MultiSequence[core.models.MultiblockComponent]) -> bool:
+        raise NotImplementedError("CavityConstraint.is_satisfied is not implemented.")
+    
+    def to_model(
+        self,
+        model: cp_model.CpModel,
+        seq: core.multi_sequence.MultiSequence[cp_model.IntVar],
+        components: list[core.models.MultiblockComponent]
+    ) -> None:
+        if seq.shape[0] != seq.shape[1] or seq.shape[2] != 5:
+            raise ValueError("CavityConstraint requires a NxNx5 sequence.")
+        type_to_id = dict()
+        for i, component in enumerate(components):
+            if component.type not in type_to_id:
+                type_to_id[component.type] = [i]
+            else:
+                type_to_id[component.type].append(i)
+        cavity_ids = type_to_id["cavity"]
+
+        # North cavities
+        has_cavity_N = [model.NewBoolVar(str(uuid.uuid4())) for _ in range(seq.shape[1])]
+        for z in range(4, seq.shape[1] - 4):
+            cavity_positions = [
+                seq[1, z, 1],
+                seq[2, z, 1],
+                seq[3, z, 1],
+                seq[1, z, 2],
+                seq[3, z, 2],
+                seq[1, z, 3],
+                seq[2, z, 3],
+                seq[3, z, 3]
+            ]
+            for pos in cavity_positions:
+                model.AddAllowedAssignments([pos], [(cavity_id,) for cavity_id in cavity_ids]).OnlyEnforceIf(has_cavity_N[z])
+                model.AddForbiddenAssignments([pos], [(cavity_id,) for cavity_id in cavity_ids]).OnlyEnforceIf(has_cavity_N[z].Not())
+            for pos in itertools.combinations(cavity_positions, 2):
+                model.Add(pos[0] == pos[1]).OnlyEnforceIf(has_cavity_N[z])
+            model.AddImplication(has_cavity_N[z], has_cavity_N[z - 1].Not())
+            model.AddImplication(has_cavity_N[z], has_cavity_N[z + 1].Not())
+        
+        # South cavities
+        has_cavity_S = [model.NewBoolVar(str(uuid.uuid4())) for _ in range(seq.shape[1])]
+        for z in range(4, seq.shape[1] - 4):
+            cavity_positions = [
+                seq[seq.shape[0] - 2, z, 1],
+                seq[seq.shape[0] - 3, z, 1],
+                seq[seq.shape[0] - 4, z, 1],
+                seq[seq.shape[0] - 2, z, 2],
+                seq[seq.shape[0] - 4, z, 2],
+                seq[seq.shape[0] - 2, z, 3],
+                seq[seq.shape[0] - 3, z, 3],
+                seq[seq.shape[0] - 4, z, 3]
+            ]
+            for pos in cavity_positions:
+                model.AddAllowedAssignments([pos], [(cavity_id,) for cavity_id in cavity_ids]).OnlyEnforceIf(has_cavity_S[z])
+                model.AddForbiddenAssignments([pos], [(cavity_id,) for cavity_id in cavity_ids]).OnlyEnforceIf(has_cavity_S[z].Not())
+            for pos in itertools.combinations(cavity_positions, 2):
+                model.Add(pos[0] == pos[1]).OnlyEnforceIf(has_cavity_S[z])
+            model.AddImplication(has_cavity_S[z], has_cavity_S[z - 1].Not())
+            model.AddImplication(has_cavity_S[z], has_cavity_S[z + 1].Not())
+            
+        # West cavities
+        has_cavity_W = [model.NewBoolVar(str(uuid.uuid4())) for _ in range(seq.shape[0])]
+        for x in range(4, seq.shape[0] - 4):
+            cavity_positions = [
+                seq[x, 1, 1],
+                seq[x, 2, 1],
+                seq[x, 3, 1],
+                seq[x, 1, 2],
+                seq[x, 3, 2],
+                seq[x, 1, 3],
+                seq[x, 2, 3],
+                seq[x, 3, 3]
+            ]
+            for pos in cavity_positions:
+                model.AddAllowedAssignments([pos], [(cavity_id,) for cavity_id in cavity_ids]).OnlyEnforceIf(has_cavity_W[x])
+                model.AddForbiddenAssignments([pos], [(cavity_id,) for cavity_id in cavity_ids]).OnlyEnforceIf(has_cavity_W[x].Not())
+            for pos in itertools.combinations(cavity_positions, 2):
+                model.Add(pos[0] == pos[1]).OnlyEnforceIf(has_cavity_W[x])
+            model.AddImplication(has_cavity_W[x], has_cavity_W[x - 1].Not())
+            model.AddImplication(has_cavity_W[x], has_cavity_W[x + 1].Not())
+        
+        # East cavities
+        has_cavity_E = [model.NewBoolVar(str(uuid.uuid4())) for _ in range(seq.shape[0])]
+        for x in range(4, seq.shape[0] - 4):
+            cavity_positions = [
+                seq[x, seq.shape[1] - 2, 1],
+                seq[x, seq.shape[1] - 3, 1],
+                seq[x, seq.shape[1] - 4, 1],
+                seq[x, seq.shape[1] - 2, 2],
+                seq[x, seq.shape[1] - 4, 2],
+                seq[x, seq.shape[1] - 2, 3],
+                seq[x, seq.shape[1] - 3, 3],
+                seq[x, seq.shape[1] - 4, 3]
+            ]
+            for pos in cavity_positions:
+                model.AddAllowedAssignments([pos], [(cavity_id,) for cavity_id in cavity_ids]).OnlyEnforceIf(has_cavity_E[x])
+                model.AddForbiddenAssignments([pos], [(cavity_id,) for cavity_id in cavity_ids]).OnlyEnforceIf(has_cavity_E[x].Not())
+            for pos in itertools.combinations(cavity_positions, 2):
+                model.Add(pos[0] == pos[1]).OnlyEnforceIf(has_cavity_E[x])
+            model.AddImplication(has_cavity_E[x], has_cavity_E[x - 1].Not())
+            model.AddImplication(has_cavity_E[x], has_cavity_E[x + 1].Not())
 
 
 class MagnetConstraint(core.constraints.Constraint):
@@ -535,3 +642,91 @@ class MagnetConstraint(core.constraints.Constraint):
         # SE Corner Middle Layer
         for x, z in [(seq.shape[0] - 4, seq.shape[1] - 2), (seq.shape[0] - 3, seq.shape[1] - 2), (seq.shape[0] - 2, seq.shape[1] - 2), (seq.shape[0] - 2, seq.shape[1] - 3), (seq.shape[0] - 4, seq.shape[1] - 4), (seq.shape[0] - 2, seq.shape[1] - 4)]:
             model.AddAllowedAssignments([seq[x, z, 2]], [(yoke_id,) for yoke_id in yoke_ids])
+
+
+class InnerSymmetryConstraint(core.constraints.Constraint):
+    """Ensures that the cross-section of the synchrotron is symmetric."""
+    def is_satisfied(self, seq: core.multi_sequence.MultiSequence[core.models.MultiblockComponent]) -> bool:
+        raise NotImplementedError("InnerSymmetryConstraint.is_satisfied is not implemented.")
+    
+    def to_model(
+        self,
+        model: cp_model.CpModel,
+        seq: core.multi_sequence.MultiSequence[cp_model.IntVar],
+        components: list[core.models.MultiblockComponent]
+    ) -> None:
+        # North side
+        for z in range(4, seq.shape[1] - 4):
+            for x in range(1, 4):
+                for y in range(1, 4):
+                    x_mirr = 3 - (x - 1)
+                    y_mirr = 3 - (y - 1)
+                    model.Add(seq[x, z, y] == seq[x_mirr, z, y])
+                    model.Add(seq[x, z, y] == seq[x, z, y_mirr])
+        
+        # South side
+        for z in range(4, seq.shape[1] - 4):
+            for x in range(seq.shape[0] - 4, seq.shape[0] - 1):
+                for y in range(1, 4):
+                    x_mirr = seq.shape[0] - (3 - ((seq.shape[0] - x - 1) - 1)) - 1
+                    y_mirr = 3 - (y - 1)
+                    model.Add(seq[x, z, y] == seq[x_mirr, z, y])
+                    model.Add(seq[x, z, y] == seq[x, z, y_mirr])
+        
+        # West side
+        for x in range(4, seq.shape[0] - 4):
+            for z in range(1, 4):
+                for y in range(1, 4):
+                    z_mirr = 3 - (z - 1)
+                    y_mirr = 3 - (y - 1)
+                    model.Add(seq[x, z, y] == seq[x, z_mirr, y])
+                    model.Add(seq[x, z, y] == seq[x, z, y_mirr])
+        
+        # East side
+        for x in range(4, seq.shape[0] - 4):
+            for z in range(seq.shape[1] - 4, seq.shape[1] - 1):
+                for y in range(1, 4):
+                    z_mirr = seq.shape[1] - (3 - ((seq.shape[1] - z - 1) - 1)) - 1
+                    y_mirr = 3 - (y - 1)
+                    model.Add(seq[x, z, y] == seq[x, z_mirr, y])
+                    model.Add(seq[x, z, y] == seq[x, z, y_mirr])
+
+
+class HeatNeutralConstraint(core.constraints.Constraint):
+    """Ensures that the cooling rate is equal to or greater than the heating rate."""
+    def is_satisfied(self, seq: core.multi_sequence.MultiSequence[core.models.MultiblockComponent]) -> bool:
+        raise NotImplementedError("HeatNeutralConstraint.is_satisfied is not implemented.")
+    
+    def to_model(
+        self,
+        model: cp_model.CpModel,
+        seq: core.multi_sequence.MultiSequence[cp_model.IntVar],
+        components: list[core.models.MultiblockComponent]
+    ) -> None:
+        heating_rate = calculations.TotalHeatingRate().to_model(model, seq, components)
+        cooling_rate = calculations.TotalCoolingRate().to_model(model, seq, components)
+        model.Add(heating_rate <= cooling_rate)
+
+
+class EnergyConstraint(core.constraints.Constraint):
+    """Ensures that the beam exists with an energy greater than a desired value."""
+    def __init__(self, minimum_energy: int, maximum_energy: int, charge: float, radius: float, mass: float) -> None:
+        self.minimum_energy = minimum_energy
+        self.maximum_energy = maximum_energy
+        self.charge = charge
+        self.radius = radius
+        self.mass = mass
+    
+    def is_satisfied(self, seq: core.multi_sequence.MultiSequence[core.models.MultiblockComponent]) -> bool:
+        raise NotImplementedError("EnergyConstraint.is_satisfied is not implemented.")
+
+    def to_model(
+        self,
+        model: cp_model.CpModel,
+        seq: core.multi_sequence.MultiSequence[cp_model.IntVar],
+        components: list[core.models.MultiblockComponent]
+    ) -> None:
+        dipole_energy = calculations.MaxDipoleEnergy(self.charge, self.radius, self.mass).to_model(model, seq, components)
+        radiation_loss = calculations.MaxRadiationLoss(self.charge, self.radius, self.mass).to_model(model, seq, components)
+        energy = model.NewIntVar(self.minimum_energy, self.maximum_energy, str(uuid.uuid4()))
+        model.AddMinEquality(energy, [dipole_energy, radiation_loss])

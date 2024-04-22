@@ -62,7 +62,7 @@ DEFAULT_COMPONENTS: list[core.models.MultiblockComponent] = [
     Cooler(name="copper", cooling=80, placement_rule="one water cooler", short_name="Cu"),
     Cooler(name="tin", cooling=120, placement_rule="two lapis coolers", short_name="Sn"),
     Cooler(name="lead", cooling=65, placement_rule="one iron cooler", short_name="Pb"),
-    Cooler(name="Boron", cooling=105, placement_rule="one yoke && one cavity", short_name="B "),
+    Cooler(name="boron", cooling=105, placement_rule="one yoke && one cavity", short_name="B "),
     Cooler(name="lithium", cooling=125, placement_rule="one boron cooler", short_name="Li"),
     Cooler(name="magnesium", cooling=150, placement_rule="one end_stone cooler && one prismarine cooler", short_name="Mg"),
     Cooler(name="manganese", cooling=180, placement_rule="one gold cooler && one quartz cooler", short_name="Mn"),

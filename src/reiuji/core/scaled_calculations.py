@@ -36,3 +36,22 @@ def divide(model: cp_model.CpModel, target: cp_model.IntVar, a: cp_model.IntVar 
     scaled_numerator = model.NewIntVar(0, cp_model.INT32_MAX, f"{op_id}_scaled_numerator")
     model.AddMultiplicationEquality(scaled_numerator, [a, SCALE_FACTOR])
     model.AddDivisionEquality(target, scaled_numerator, b)
+
+
+def sqrt(model: cp_model.CpModel, target: cp_model.IntVar, a: cp_model.IntVar | int) -> None:
+    """Calculates the square root of the scaled integer and returns the result.
+
+    Args:
+        model (cp_model.CpModel): The constraint programming model.
+        target (cp_model.IntVar): The variable to store the square root.
+        a (cp_model.IntVar | int): The integer or integer variable.
+    """
+    op_id = uuid.uuid4()
+    sqrt = model.NewIntVar(0, cp_model.INT32_MAX, f"{op_id}_sqrt")
+    square_ = model.NewIntVar(0, cp_model.INT32_MAX, f"{op_id}_square_")
+    model.AddMultiplicationEquality(square_, [target, target])
+    square = model.NewIntVar(0, cp_model.INT32_MAX, f"{op_id}_square")
+    model.AddDivisionEquality(square, square_, SCALE_FACTOR)
+    error = model.NewIntVar(0, cp_model.INT32_MAX, f"{op_id}_error")
+    model.AddAbsEquality(error, a - square)
+    model.Add(error <= 10)
