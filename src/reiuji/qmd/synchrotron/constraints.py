@@ -694,6 +694,9 @@ class InnerSymmetryConstraint(core.constraints.Constraint):
 
 class HeatNeutralConstraint(core.constraints.Constraint):
     """Ensures that the cooling rate is equal to or greater than the heating rate."""
+    def __init__(self, external_heating: int) -> None:
+        self.external_heating = external_heating
+    
     def is_satisfied(self, seq: core.multi_sequence.MultiSequence[core.models.MultiblockComponent]) -> bool:
         raise NotImplementedError("HeatNeutralConstraint.is_satisfied is not implemented.")
     
@@ -705,7 +708,7 @@ class HeatNeutralConstraint(core.constraints.Constraint):
     ) -> None:
         heating_rate = calculations.TotalHeatingRate().to_model(model, seq, components)
         cooling_rate = calculations.TotalCoolingRate().to_model(model, seq, components)
-        model.Add(heating_rate <= cooling_rate)
+        model.Add(heating_rate + self.external_heating <= cooling_rate)
 
 
 class EnergyConstraint(core.constraints.Constraint):
@@ -730,3 +733,26 @@ class EnergyConstraint(core.constraints.Constraint):
         radiation_loss = calculations.MaxRadiationLoss(self.charge, self.radius, self.mass).to_model(model, seq, components)
         energy = model.NewIntVar(self.minimum_energy, self.maximum_energy, str(uuid.uuid4()))
         model.AddMinEquality(energy, [dipole_energy, radiation_loss])
+
+
+class BeamFocusConstraint(core.constraints.Constraint):
+    """Ensures that the beam exits with a focus greater than a desired value."""
+    def __init__(self, target_focus: float, charge: float, beam_strength: int, scaling_factor: int = 10000, initial_focus: float = 0.0) -> None:
+        self.target_focus = target_focus
+        self.charge = charge
+        self.beam_strength = beam_strength
+        self.scaling_factor = scaling_factor
+        self.initial_focus = initial_focus
+    
+    def is_satisfied(self, seq: core.multi_sequence.MultiSequence[core.models.MultiblockComponent]) -> bool:
+        raise NotImplementedError("BeamFocusConstraint.is_satisfied is not implemented.")
+    
+    def to_model(
+        self,
+        model: cp_model.CpModel,
+        seq: core.multi_sequence.MultiSequence[cp_model.IntVar],
+        components: list[core.models.MultiblockComponent]
+    ) -> None:
+        target_focus = round(self.target_focus * core.scaled_calculations.SCALE_FACTOR)
+        focus = calculations.BeamFocus(self.charge, self.beam_strength, self.scaling_factor, self.initial_focus).to_model(model, seq, components)
+        model.Add(focus >= target_focus)

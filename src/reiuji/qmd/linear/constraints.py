@@ -136,6 +136,9 @@ class MagnetConstraint(core.constraints.Constraint):
 
 class HeatNeutralConstraint(core.constraints.Constraint):
     """Ensures that the cooling rate is equal to or greater than the heating rate."""
+    def __init__(self, external_heating: int) -> None:
+        self.external_heating = external_heating
+    
     def is_satisfied(self, seq: core.multi_sequence.MultiSequence[core.models.MultiblockComponent]) -> bool:
         raise NotImplementedError("HeatNeutralConstraint.is_satisfied is not implemented.")
     
@@ -147,7 +150,7 @@ class HeatNeutralConstraint(core.constraints.Constraint):
     ) -> None:
         heating_rate = calculations.TotalHeatingRate().to_model(model, seq, components)
         cooling_rate = calculations.TotalCoolingRate().to_model(model, seq, components)
-        model.Add(heating_rate <= cooling_rate)
+        model.Add(heating_rate + self.external_heating <= cooling_rate)
 
 
 class BeamFocusConstraint(core.constraints.Constraint):

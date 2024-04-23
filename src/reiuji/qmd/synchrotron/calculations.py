@@ -219,19 +219,22 @@ class MaxDipoleEnergy(core.calculations.Calculation):
         total_strength_sq = model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4()))
         core.scaled_calculations.multiply(model, total_strength_sq, total_strength, total_strength)
 
-        mass = round(self.mass * 10)
-        charge = round(self.charge ** 2 * 9)
-        radius = round(self.radius ** 2 * 4)
+        mass = round(self.mass * core.scaled_calculations.SCALE_FACTOR)
+        charge = round(self.charge ** 2 * core.scaled_calculations.SCALE_FACTOR)
+        radius = round(self.radius ** 2 * core.scaled_calculations.SCALE_FACTOR)
 
-        max_dipole_energy_ = model.NewIntVar(0, 2 ** 48 - 1, str(uuid.uuid4()))
-        model.AddMultiplicationEquality(max_dipole_energy_, [charge, radius, total_strength_sq, 10])
-        max_dipole_energy__ = model.NewIntVar(0, 2 ** 48 - 1, str(uuid.uuid4()))
-        model.AddDivisionEquality(max_dipole_energy__, max_dipole_energy_, 2 * mass)
+        qb = model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4()))
+        core.scaled_calculations.multiply(model, qb, charge, total_strength_sq)
+        qbr = model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4()))
+        core.scaled_calculations.multiply(model, qbr, qb, radius)
+        qbrm = model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4()))
+        core.scaled_calculations.divide(model, qbrm, qbr, 2 * mass)
 
-        max_dipole_energy = model.NewIntVar(0, 2 ** 48 - 1, str(uuid.uuid4()))
-        model.AddDivisionEquality(max_dipole_energy, max_dipole_energy__, 36)
+        dipole_energy = model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4()))
+        if core.scaled_calculations.SCALE_FACTOR <= 1000:
+            model.AddMultiplicationEquality(dipole_energy, qbrm, 1000 // core.scaled_calculations.SCALE_FACTOR)
 
-        return max_dipole_energy
+        return dipole_energy
 
 
 class MaxRadiationLoss(core.calculations.Calculation):
@@ -316,19 +319,276 @@ class MaxRadiationLoss(core.calculations.Calculation):
         total_voltage_4rt = model.NewIntVar(1, cp_model.INT32_MAX, str(uuid.uuid4()))
         core.scaled_calculations.sqrt(model, total_voltage_4rt, total_voltage_sqrt)
 
-        mass = round(self.mass * 10)
-        charge = round(abs(self.charge) ** (1 / 4) * 81)
-        radius = round(self.radius ** (1 / 4) * 16)
+        mass = round(self.mass * core.scaled_calculations.SCALE_FACTOR)
+        charge = round(abs(self.charge) ** (1 / 4) * core.scaled_calculations.SCALE_FACTOR)
+        radius = round(self.radius ** (1 / 4) * core.scaled_calculations.SCALE_FACTOR)
+        factor = round(3 ** (1 / 4) * core.scaled_calculations.SCALE_FACTOR)
 
-        mvr_ = model.NewIntVar(0, 2 ** 48 - 1, str(uuid.uuid4()))
-        model.AddMultiplicationEquality(mvr_, [total_voltage_4rt, radius, 3, mass])
-        mvr = model.NewIntVar(0, 2 ** 48 - 1, str(uuid.uuid4()))
-        model.AddDivisionEquality(mvr, mvr_, 160)
+        mv = model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4()))
+        core.scaled_calculations.multiply(model, mv, mass, total_voltage_4rt)
+        mvr = model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4()))
+        core.scaled_calculations.multiply(model, mvr, mv, radius)
+        mvrf = model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4()))
+        core.scaled_calculations.multiply(model, mvrf, mvr, factor)
+        mvrfq = model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4()))
+        core.scaled_calculations.divide(model, mvrfq, mvrf, charge)
 
-        mvr2 = model.NewIntVar(0, 2 ** 48 - 1, str(uuid.uuid4()))
-        model.AddMultiplicationEquality(mvr2, [mvr, 81])
+        radiation_energy = model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4()))
+        if core.scaled_calculations.SCALE_FACTOR <= 1000:
+            model.AddMultiplicationEquality(radiation_energy, mvrfq, 1000 // core.scaled_calculations.SCALE_FACTOR)
 
-        max_radiation_loss = model.NewIntVar(0, 2 ** 48 - 1, str(uuid.uuid4()))
-        model.AddDivisionEquality(max_radiation_loss, mvr2, charge)
+        return radiation_energy
 
-        return max_radiation_loss
+
+class BeamFocus(core.calculations.Calculation):
+    def __init__(self, charge: float, beam_strength: int, scaling_factor: int = 10000, initial_focus: float = 0.0) -> None:
+        self.charge = charge
+        self.beam_strength = beam_strength
+        self.scaling_factor = scaling_factor
+        self.initial_focus = initial_focus
+    
+    def __call__(self, seq: core.multi_sequence.MultiSequence[core.models.MultiblockComponent]) -> float:
+        quadrupole_strength = 0.0
+        # North side
+        for z in range(2, seq.shape[1] - 2):
+            if isinstance(seq[2, z, 3], models.Magnet) and seq[1, z, 3].type != "yoke":
+                quadrupole_strength += seq[2, z, 3].strength
+        # South side
+        for z in range(2, seq.shape[1] - 2):
+            if isinstance(seq[seq.shape[0] - 3, z, 3], models.Magnet) and seq[seq.shape[0] - 2, z, 3].type != "yoke":
+                quadrupole_strength += seq[seq.shape[0] - 3, z, 3].strength
+        # West side
+        for x in range(4, seq.shape[0] - 4):
+            if isinstance(seq[x, 2, 3], models.Magnet) and seq[x, 1, 3].type != "yoke":
+                quadrupole_strength += seq[x, 2, 3].strength
+        # East side
+        for x in range(4, seq.shape[0] - 4):
+            if isinstance(seq[x, seq.shape[1] - 3, 3], models.Magnet) and seq[x, seq.shape[1] - 2, 3].type != "yoke":
+                quadrupole_strength += seq[x, seq.shape[1] - 3, 3].strength
+        beams = (seq.shape[0] - 4) * 4 - 4
+        focus_loss = beams * 0.02 * (1 + abs(self.charge) * (self.beam_strength / self.scaling_factor) ** (1 / 2))
+        focus_gain = abs(self.charge) * quadrupole_strength
+        return self.initial_focus + focus_gain - focus_loss
+    
+    def to_model(
+            self,
+            model: cp_model.CpModel,
+            seq: core.multi_sequence.MultiSequence[cp_model.IntVar],
+            components: list[core.models.MultiblockComponent]
+    ) -> cp_model.IntVar:
+        type_to_id = dict()
+        for i, component in enumerate(components):
+            if component.type not in type_to_id:
+                type_to_id[component.type] = [i]
+            else:
+                type_to_id[component.type].append(i)
+        yoke_ids = type_to_id["yoke"]
+        strengths = [round(component.strength * core.scaled_calculations.SCALE_FACTOR) if isinstance(component, models.Magnet) else 0 for component in components]
+
+        # North side
+        strength_contrib_N = [model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4())) for _ in range(seq.shape[1] - 4)]
+        is_dipole_N = [model.NewBoolVar(str(uuid.uuid4())) for _ in range(seq.shape[1] - 4)]
+        for z in range(2, seq.shape[1] - 2):
+            model.AddAllowedAssignments([seq[1, z, 3]], [(yoke_id,) for yoke_id in yoke_ids]).OnlyEnforceIf(is_dipole_N[z - 2])
+            model.AddForbiddenAssignments([seq[1, z, 3]], [(yoke_id,) for yoke_id in yoke_ids]).OnlyEnforceIf(is_dipole_N[z - 2].Not())
+            model.AddElement(seq[2, z, 3], strengths, strength_contrib_N[z - 2])
+        
+        strength_contrib_N_ = [model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4())) for _ in range(seq.shape[1] - 4)]
+        for i in range(seq.shape[1] - 4):
+            model.AddMultiplicationEquality(strength_contrib_N_[i], is_dipole_N[i].Not(), strength_contrib_N[i])
+        
+        total_strength_N = model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4()))
+        model.Add(sum(strength_contrib_N_) == total_strength_N)
+        
+        # South side
+        strength_contrib_S = [model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4())) for _ in range(seq.shape[1] - 4)]
+        is_dipole_S = [model.NewBoolVar(str(uuid.uuid4())) for _ in range(seq.shape[1] - 4)]
+        for z in range(2, seq.shape[1] - 2):
+            model.AddAllowedAssignments([seq[seq.shape[0] - 2, z, 3]], [(yoke_id,) for yoke_id in yoke_ids]).OnlyEnforceIf(is_dipole_S[z - 2])
+            model.AddForbiddenAssignments([seq[seq.shape[0] - 2, z, 3]], [(yoke_id,) for yoke_id in yoke_ids]).OnlyEnforceIf(is_dipole_S[z - 2].Not())
+            model.AddElement(seq[seq.shape[0] - 3, z, 3], strengths, strength_contrib_S[z - 2])
+        
+        strength_contrib_S_ = [model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4())) for _ in range(seq.shape[1] - 4)]
+        for i in range(seq.shape[1] - 4):
+            model.AddMultiplicationEquality(strength_contrib_S_[i], is_dipole_S[i].Not(), strength_contrib_S[i])
+        
+        total_strength_S = model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4()))
+        model.Add(sum(strength_contrib_S_) == total_strength_S)
+        
+        # West side
+        strength_contrib_W = [model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4())) for _ in range(seq.shape[0] - 8)]
+        is_dipole_W = [model.NewBoolVar(str(uuid.uuid4())) for _ in range(seq.shape[0] - 8)]
+        for x in range(4, seq.shape[0] - 4):
+            model.AddAllowedAssignments([seq[x, 1, 3]], [(yoke_id,) for yoke_id in yoke_ids]).OnlyEnforceIf(is_dipole_W[x - 4])
+            model.AddForbiddenAssignments([seq[x, 1, 3]], [(yoke_id,) for yoke_id in yoke_ids]).OnlyEnforceIf(is_dipole_W[x - 4].Not())
+            model.AddElement(seq[x, 2, 3], strengths, strength_contrib_W[x - 4])
+        
+        strength_contrib_W_ = [model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4())) for _ in range(seq.shape[0] - 8)]
+        for i in range(seq.shape[0] - 8):
+            model.AddMultiplicationEquality(strength_contrib_W_[i], is_dipole_W[i].Not(), strength_contrib_W[i])
+        
+        total_strength_W = model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4()))
+        model.Add(sum(strength_contrib_W_) == total_strength_W)
+        
+        # East side
+        strength_contrib_E = [model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4())) for _ in range(seq.shape[0] - 8)]
+        is_dipole_E = [model.NewBoolVar(str(uuid.uuid4())) for _ in range(seq.shape[0] - 8)]
+        for x in range(4, seq.shape[0] - 4):
+            model.AddAllowedAssignments([seq[x, seq.shape[1] - 2, 3]], [(yoke_id,) for yoke_id in yoke_ids]).OnlyEnforceIf(is_dipole_E[x - 4])
+            model.AddForbiddenAssignments([seq[x, seq.shape[1] - 2, 3]], [(yoke_id,) for yoke_id in yoke_ids]).OnlyEnforceIf(is_dipole_E[x - 4].Not())
+            model.AddElement(seq[x, seq.shape[1] - 3, 3], strengths, strength_contrib_E[x - 4])
+        
+        strength_contrib_E_ = [model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4())) for _ in range(seq.shape[0] - 8)]
+        for i in range(seq.shape[0] - 8):
+            model.AddMultiplicationEquality(strength_contrib_E_[i], is_dipole_E[i].Not(), strength_contrib_E[i])
+        
+        total_strength_E = model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4()))
+        model.Add(sum(strength_contrib_E_) == total_strength_E)
+
+        total_strength = model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4()))
+        model.Add(total_strength == sum([total_strength_N, total_strength_S, total_strength_W, total_strength_E]))
+
+        beams = (seq.shape[0] - 4) * 4 - 4
+        focus_loss = round(0.02 * (1 + abs(self.charge) * (self.beam_strength / self.scaling_factor) ** (1 / 2)) * core.scaled_calculations.SCALE_FACTOR) * beams
+
+        focus_gain = model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4()))
+        core.scaled_calculations.multiply(model, focus_gain, total_strength, round(abs(self.charge) * core.scaled_calculations.SCALE_FACTOR))
+
+        focus_delta = model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4()))
+        model.Add(focus_delta == focus_gain - focus_loss)
+
+        focus = model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4()))
+        model.Add(focus == focus_delta + round(self.initial_focus * core.scaled_calculations.SCALE_FACTOR))
+
+        return focus
+    
+
+class PowerRequirement(core.calculations.Calculation):
+    def __call__(self, seq: core.multi_sequence.MultiSequence[core.models.MultiblockComponent]) -> float:
+        efficiency = 0.0
+        parts = 0
+        raw_power = 0
+        # North side
+        for z in range(2, seq.shape[1] - 2):
+            if isinstance(seq[2, z, 3], (models.Cavity, models.Magnet)):
+                raw_power += seq[2, z, 3].power
+                efficiency += seq[2, z, 3].efficiency
+                parts += 1
+        # South side
+        for z in range(2, seq.shape[1] - 2):
+            if isinstance(seq[seq.shape[0] - 3, z, 3], (models.Cavity, models.Magnet)):
+                raw_power += seq[seq.shape[0] - 3, z, 3].power
+                efficiency += seq[seq.shape[0] - 3, z, 3].efficiency
+                parts += 1
+        # West side
+        for x in range(4, seq.shape[0] - 4):
+            if isinstance(seq[x, 2, 3], (models.Cavity, models.Magnet)):
+                raw_power += seq[x, 2, 3].power
+                efficiency += seq[x, 2, 3].efficiency
+                parts += 1
+        # East side
+        for x in range(4, seq.shape[0] - 4):
+            if isinstance(seq[x, seq.shape[1] - 3, 3], (models.Cavity, models.Magnet)):
+                raw_power += seq[x, seq.shape[1] - 3, 3].power
+                efficiency += seq[x, seq.shape[1] - 3, 3].efficiency
+                parts += 1
+        return raw_power / (efficiency / parts)
+    
+    def to_model(
+            self,
+            model: cp_model.CpModel,
+            seq: core.multi_sequence.MultiSequence[cp_model.IntVar],
+            components: list[core.models.MultiblockComponent]
+    ) -> cp_model.IntVar:
+        type_to_id = dict()
+        for i, component in enumerate(components):
+            if component.type not in type_to_id:
+                type_to_id[component.type] = [i]
+            else:
+                type_to_id[component.type].append(i)
+        powers = [component.power if isinstance(component, (models.Cavity, models.Magnet)) else 0 for component in components]
+        efficiencies = [round(component.efficiency * core.scaled_calculations.SCALE_FACTOR) if isinstance(component, (models.Cavity, models.Magnet)) else 0 for component in components]
+        is_part = [1 if isinstance(component, (models.Cavity, models.Magnet)) else 0 for component in components]
+
+        # North side
+        raw_power_contrib_N = [model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4())) for _ in range(seq.shape[1] - 4)]
+        efficiency_contrib_N = [model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4())) for _ in range(seq.shape[1] - 4)]
+        is_part_N = [model.NewBoolVar(str(uuid.uuid4())) for _ in range(seq.shape[1] - 4)]
+        for z in range(2, seq.shape[1] - 2):
+            model.AddElement(seq[2, z, 3], powers, raw_power_contrib_N[z - 2])
+            model.AddElement(seq[2, z, 3], efficiencies, efficiency_contrib_N[z - 2])
+            model.AddElement(seq[2, z, 3], is_part, is_part_N[z - 2])
+        
+        raw_power_N = model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4()))
+        efficiency_N = model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4()))
+        parts_N = model.NewIntVar(1, cp_model.INT32_MAX, str(uuid.uuid4()))
+        model.Add(raw_power_N == sum(raw_power_contrib_N))
+        model.Add(efficiency_N == sum(efficiency_contrib_N))
+        model.Add(parts_N == sum(is_part_N))
+
+        # South side
+        raw_power_contrib_S = [model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4())) for _ in range(seq.shape[1] - 4)]
+        efficiency_contrib_S = [model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4())) for _ in range(seq.shape[1] - 4)]
+        is_part_S = [model.NewBoolVar(str(uuid.uuid4())) for _ in range(seq.shape[1] - 4)]
+        for z in range(2, seq.shape[1] - 2):
+            model.AddElement(seq[seq.shape[0] - 3, z, 3], powers, raw_power_contrib_S[z - 2])
+            model.AddElement(seq[seq.shape[0] - 3, z, 3], efficiencies, efficiency_contrib_S[z - 2])
+            model.AddElement(seq[seq.shape[0] - 3, z, 3], is_part, is_part_S[z - 2])
+        
+        raw_power_S = model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4()))
+        efficiency_S = model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4()))
+        parts_S = model.NewIntVar(1, cp_model.INT32_MAX, str(uuid.uuid4()))
+        model.Add(raw_power_S == sum(raw_power_contrib_S))
+        model.Add(efficiency_S == sum(efficiency_contrib_S))
+        model.Add(parts_S == sum(is_part_S))
+
+        # West side
+        raw_power_contrib_W = [model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4())) for _ in range(seq.shape[0] - 8)]
+        efficiency_contrib_W = [model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4())) for _ in range(seq.shape[0] - 8)]
+        is_part_W = [model.NewBoolVar(str(uuid.uuid4())) for _ in range(seq.shape[0] - 8)]
+        for x in range(4, seq.shape[0] - 4):
+            model.AddElement(seq[x, 2, 3], powers, raw_power_contrib_W[x - 4])
+            model.AddElement(seq[x, 2, 3], efficiencies, efficiency_contrib_W[x - 4])
+            model.AddElement(seq[x, 2, 3], is_part, is_part_W[x - 4])
+        
+        raw_power_W = model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4()))
+        efficiency_W = model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4()))
+        parts_W = model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4()))
+        model.Add(raw_power_W == sum(raw_power_contrib_W))
+        model.Add(efficiency_W == sum(efficiency_contrib_W))
+        model.Add(parts_W == sum(is_part_W))
+
+        # East side
+        raw_power_contrib_E = [model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4())) for _ in range(seq.shape[0] - 8)]
+        efficiency_contrib_E = [model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4())) for _ in range(seq.shape[0] - 8)]
+        is_part_E = [model.NewBoolVar(str(uuid.uuid4())) for _ in range(seq.shape[0] - 8)]
+        for x in range(4, seq.shape[0] - 4):
+            model.AddElement(seq[x, seq.shape[1] - 3, 3], powers, raw_power_contrib_E[x - 4])
+            model.AddElement(seq[x, seq.shape[1] - 3, 3], efficiencies, efficiency_contrib_E[x - 4])
+            model.AddElement(seq[x, seq.shape[1] - 3, 3], is_part, is_part_E[x - 4])
+        
+        raw_power_E = model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4()))
+        efficiency_E = model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4()))
+        parts_E = model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4()))
+        model.Add(raw_power_E == sum(raw_power_contrib_E))
+        model.Add(efficiency_E == sum(efficiency_contrib_E))
+        model.Add(parts_E == sum(is_part_E))
+        
+        raw_power = model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4()))
+        efficiency = model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4()))
+        parts = model.NewIntVar(1, cp_model.INT32_MAX, str(uuid.uuid4()))
+        model.Add(raw_power == sum([raw_power_N, raw_power_S, raw_power_W, raw_power_E]))
+        model.Add(efficiency == sum([efficiency_N, efficiency_S, efficiency_W, efficiency_E]))
+        model.Add(parts == sum([parts_N, parts_S, parts_W, parts_E]))
+
+        reduced_efficiency = model.NewIntVar(1, cp_model.INT32_MAX, str(uuid.uuid4()))
+        model.AddDivisionEquality(reduced_efficiency, efficiency, parts)
+
+        raw_power_ = model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4()))
+        model.AddMultiplicationEquality(raw_power_, raw_power, core.scaled_calculations.SCALE_FACTOR)
+
+        power_requirement = model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4()))
+        model.AddDivisionEquality(power_requirement, raw_power_, reduced_efficiency)
+
+        return power_requirement
+
