@@ -3,3 +3,4 @@
 from . import linear
 from . import synchrotron
 from . import decelerator
+from . import nucleosynthesis

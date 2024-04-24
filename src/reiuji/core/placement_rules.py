@@ -348,13 +348,13 @@ def parse_rule_string(s: str) -> PlacementRule:
     if not isinstance(groups["name"], type(None)):
         return NamePlacementRule(
             groups["name"].strip(),
-            groups["type"].strip().rstrip("s" if groups["quantity"] != "one" else ""),
+            groups["type"].strip().rstrip("s" if (groups["quantity"] != "one" and groups["type"].strip() != "glass") else ""),
             QUANTITIES[groups["quantity"]],
             exact=not isinstance(groups["exact"], type(None)),
             axial=not isinstance(groups["axial"], type(None))
         )
     return TypePlacementRule(
-        groups["type"].strip().rstrip("s" if groups["quantity"] != "one" else ""),
+        groups["type"].strip().rstrip("s" if (groups["quantity"] != "one" and groups["type"].strip() != "glass") else ""),
         QUANTITIES[groups["quantity"]],
         exact=not isinstance(groups["exact"], type(None)),
         axial=not isinstance(groups["axial"], type(None)),
