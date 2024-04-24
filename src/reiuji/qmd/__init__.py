@@ -2,3 +2,4 @@
 
 from . import linear
 from . import synchrotron
+from . import decelerator
