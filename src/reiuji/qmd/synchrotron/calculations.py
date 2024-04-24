@@ -151,7 +151,7 @@ class MaxDipoleEnergy(core.calculations.Calculation):
             else:
                 type_to_id[component.type].append(i)
         yoke_ids = type_to_id["yoke"]
-        strengths = [round(component.strength * core.scaled_calculations.SCALE_FACTOR) if isinstance(component, models.Magnet) else 0 for component in components]
+        strengths = [round(component.strength * 10) if isinstance(component, models.Magnet) else 0 for component in components]
 
         # North side
         strength_contrib_N = [model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4())) for _ in range(seq.shape[1] - 4)]
@@ -217,22 +217,13 @@ class MaxDipoleEnergy(core.calculations.Calculation):
         model.Add(total_strength == sum([total_strength_N, total_strength_S, total_strength_W, total_strength_E]))
 
         total_strength_sq = model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4()))
-        core.scaled_calculations.multiply(model, total_strength_sq, total_strength, total_strength)
+        core.scaled_calculations.multiply(model, total_strength_sq, total_strength, total_strength, scale_factor=10)
 
-        mass = round(self.mass * core.scaled_calculations.SCALE_FACTOR)
-        charge = round(self.charge ** 2 * core.scaled_calculations.SCALE_FACTOR)
-        radius = round(self.radius ** 2 * core.scaled_calculations.SCALE_FACTOR)
+        multiplier = (self.charge * self.radius) ** 2 / (2 * self.mass)
+        multiplier = round(multiplier * core.scaled_calculations.SCALE_FACTOR)
 
-        qb = model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4()))
-        core.scaled_calculations.multiply(model, qb, charge, total_strength_sq)
-        qbr = model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4()))
-        core.scaled_calculations.multiply(model, qbr, qb, radius)
-        qbrm = model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4()))
-        core.scaled_calculations.divide(model, qbrm, qbr, 2 * mass)
-
-        dipole_energy = model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4()))
-        if core.scaled_calculations.SCALE_FACTOR <= 1000:
-            model.AddMultiplicationEquality(dipole_energy, qbrm, 1000 // core.scaled_calculations.SCALE_FACTOR)
+        dipole_energy = model.NewIntVar(0, 2 ** 48 - 1, str(uuid.uuid4()))
+        core.scaled_calculations.multiply(model, dipole_energy, total_strength_sq, multiplier, max_value=2 ** 48 - 1, scale_factor=10)
 
         return dipole_energy
 
@@ -276,7 +267,7 @@ class MaxRadiationLoss(core.calculations.Calculation):
                 type_to_id[component.type] = [i]
             else:
                 type_to_id[component.type].append(i)
-        voltages = [round(component.voltage * core.scaled_calculations.SCALE_FACTOR) if isinstance(component, models.Cavity) else 0 for component in components]
+        voltages = [component.voltage if isinstance(component, models.Cavity) else 0 for component in components]
 
         # North side
         voltage_contrib_N = [model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4())) for _ in range(seq.shape[1] - 4)]
@@ -314,28 +305,19 @@ class MaxRadiationLoss(core.calculations.Calculation):
         model.Add(sum([total_voltage_N, total_voltage_S, total_voltage_W, total_voltage_E]) == total_voltage)
 
         total_voltage_sqrt = model.NewIntVar(1, cp_model.INT32_MAX, str(uuid.uuid4()))
-        core.scaled_calculations.sqrt(model, total_voltage_sqrt, total_voltage)
+        core.scaled_calculations.sqrt(model, total_voltage_sqrt, total_voltage, scale_factor=1)
+
+        total_voltage_sqrt_ =  model.NewIntVar(1, cp_model.INT32_MAX, str(uuid.uuid4()))
+        model.AddMultiplicationEquality(total_voltage_sqrt_, total_voltage_sqrt, core.scaled_calculations.SCALE_FACTOR)
 
         total_voltage_4rt = model.NewIntVar(1, cp_model.INT32_MAX, str(uuid.uuid4()))
-        core.scaled_calculations.sqrt(model, total_voltage_4rt, total_voltage_sqrt)
+        core.scaled_calculations.sqrt(model, total_voltage_4rt, total_voltage_sqrt_)
 
-        mass = round(self.mass * core.scaled_calculations.SCALE_FACTOR)
-        charge = round(abs(self.charge) ** (1 / 4) * core.scaled_calculations.SCALE_FACTOR)
-        radius = round(self.radius ** (1 / 4) * core.scaled_calculations.SCALE_FACTOR)
-        factor = round(3 ** (1 / 4) * core.scaled_calculations.SCALE_FACTOR)
+        multiplier = self.mass * (3 * self.radius / abs(self.charge)) ** (1 / 4)
+        multiplier = round(multiplier * core.scaled_calculations.SCALE_FACTOR)
 
-        mv = model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4()))
-        core.scaled_calculations.multiply(model, mv, mass, total_voltage_4rt)
-        mvr = model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4()))
-        core.scaled_calculations.multiply(model, mvr, mv, radius)
-        mvrf = model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4()))
-        core.scaled_calculations.multiply(model, mvrf, mvr, factor)
-        mvrfq = model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4()))
-        core.scaled_calculations.divide(model, mvrfq, mvrf, charge)
-
-        radiation_energy = model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4()))
-        if core.scaled_calculations.SCALE_FACTOR <= 1000:
-            model.AddMultiplicationEquality(radiation_energy, mvrfq, 1000 // core.scaled_calculations.SCALE_FACTOR)
+        radiation_energy = model.NewIntVar(0, 2 ** 48 - 1, str(uuid.uuid4()))
+        core.scaled_calculations.multiply(model, radiation_energy, total_voltage_4rt, multiplier, max_value=2 ** 48 - 1)
 
         return radiation_energy
 

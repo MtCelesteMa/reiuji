@@ -731,8 +731,10 @@ class EnergyConstraint(core.constraints.Constraint):
     ) -> None:
         dipole_energy = calculations.MaxDipoleEnergy(self.charge, self.radius, self.mass).to_model(model, seq, components)
         radiation_loss = calculations.MaxRadiationLoss(self.charge, self.radius, self.mass).to_model(model, seq, components)
-        energy = model.NewIntVar(self.minimum_energy, self.maximum_energy, str(uuid.uuid4()))
+        energy = model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4()))
         model.AddMinEquality(energy, [dipole_energy, radiation_loss])
+        model.Add(energy >= self.minimum_energy)
+        model.Add(energy <= self.maximum_energy)
 
 
 class BeamFocusConstraint(core.constraints.Constraint):
