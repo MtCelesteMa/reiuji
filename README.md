@@ -14,7 +14,7 @@ pip install "git+https://github.com/MtCelesteMa/reiuji.git"
 
 - Designers for:
   - **NuclearCraft: Overhauled** turbine rotors and dynamos.
-  - **QMD** linear accelerators.
+  - **QMD** linear and synchrotron accelerators.
 
 **Note:** Features already covered by other programs like [LEU-235](https://leu-235.com/) will have lower priority. **NuclearCraft Classic** molten salt reactors might never be implemented due to their complexity.
 

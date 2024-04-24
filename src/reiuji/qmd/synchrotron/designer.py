@@ -19,7 +19,7 @@ class SynchrotronDesigner(core.designer.Designer):
             charge: float,
             mass: float,
             beam_strength: int,
-            external_heat: int = 400,
+            external_heat: int = 600,
             scaling_factor: int = 10000,
             initial_focus: float = 0.0,
             heat_neutral: bool = True,
