@@ -18,5 +18,6 @@ DEFAULT_COMPONENTS: list[core.models.MultiblockComponent] = [
     RotorBlade(name="steel", efficiency=1.0, expansion=1.4, short_name="St"),
     RotorBlade(name="extreme", efficiency=1.1, expansion=1.6, short_name="Ex"),
     RotorBlade(name="sic_sic_cmc", efficiency=1.2, expansion=1.8, short_name="Si"),
+    RotorBlade(name="super", efficiency=1.25, expansion=1.9, short_name="Su"),
     RotorStator(name="", expansion=0.75, short_name="X ")
 ]
