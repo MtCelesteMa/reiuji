@@ -20,7 +20,8 @@ class LinearAcceleratorDesigner(core.designer.Designer):
             beam_strength: int,
             scaling_factor: int = 10000,
             initial_focus: float = 0.0,
-            external_heat: int = 400,
+            env_temperature: int = 300,
+            kappa: float = 0.0025,
             heat_neutral: bool = True,
             y_symmetry: bool = False,
             z_symmetry: bool = False,
@@ -35,7 +36,8 @@ class LinearAcceleratorDesigner(core.designer.Designer):
         self.beam_strength = beam_strength
         self.scaling_factor = scaling_factor
         self.initial_focus = initial_focus
-        self.external_heat = external_heat
+        self.env_temperature = env_temperature
+        self.kappa = kappa
         self.heat_neutral = heat_neutral
         self.y_symmetry = y_symmetry
         self.z_symmetry = z_symmetry
@@ -51,7 +53,8 @@ class LinearAcceleratorDesigner(core.designer.Designer):
         constraints.CavityConstraint().to_model(model, seq, self.components)
         constraints.MagnetConstraint().to_model(model, seq, self.components)
         if self.heat_neutral:
-            constraints.HeatNeutralConstraint(self.external_heat).to_model(model, seq, self.components)
+            sa = (seq.shape[0] * 5) * 4 + 50
+            constraints.HeatNeutralConstraint(round(self.kappa * sa * self.env_temperature)).to_model(model, seq, self.components)
         if self.y_symmetry:
             core.constraints.SymmetryConstraint(1).to_model(model, seq, self.components)
         if self.z_symmetry:

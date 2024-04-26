@@ -20,7 +20,8 @@ class DeceleratorDesigner(core.designer.Designer):
             charge: float,
             mass: float,
             beam_strength: int,
-            external_heat: int = 600,
+            env_temperature: int = 300,
+            kappa: float = 0.0025,
             scaling_factor: int = 10000,
             initial_focus: float = 0.0,
             heat_neutral: bool = True,
@@ -37,7 +38,8 @@ class DeceleratorDesigner(core.designer.Designer):
         self.beam_strength = beam_strength
         self.scaling_factor = scaling_factor
         self.initial_focus = initial_focus
-        self.external_heat = external_heat
+        self.env_temperature = env_temperature
+        self.kappa = kappa
         self.heat_neutral = heat_neutral
         self.internal_symmetry = internal_symmetry
         self.components = components if not isinstance(components, type(None)) else synchrotron.models.DEFAULT_COMPONENTS
@@ -55,7 +57,8 @@ class DeceleratorDesigner(core.designer.Designer):
         synchrotron.constraints.MagnetConstraint().to_model(model, seq, self.components)
         core.constraints.PlacementRuleConstraint().to_model(model, seq, self.components)
         if self.heat_neutral:
-            synchrotron.constraints.HeatNeutralConstraint(self.external_heat).to_model(model, seq, self.components)
+            sa = (seq.shape[0] * seq.shape[2]) * 4 + ((seq.shape[0] - 10) * seq.shape[2]) * 4 + (seq.shape[0] * seq.shape[1] * 2) - ((seq.shape[0] - 10) * (seq.shape[1] - 10) * 2)
+            synchrotron.constraints.HeatNeutralConstraint(round(self.kappa * sa * self.env_temperature)).to_model(model, seq, self.components)
         if self.internal_symmetry:
             synchrotron.constraints.InnerSymmetryConstraint().to_model(model, seq, self.components)
         constraints.EnergyConstraint(self.minimum_energy, self.maximum_energy, self.charge, (seq.shape[0] - 4) / 2, self.mass).to_model(model, seq, self.components)
