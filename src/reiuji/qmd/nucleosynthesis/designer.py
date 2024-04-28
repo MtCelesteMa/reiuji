@@ -12,13 +12,13 @@ class NucleosynthesisDesigner(core.designer.Designer):
     def __init__(
             self,
             *,
-            external_heat: int = 300,
+            recipe_heat: int,
             x_symmetry: bool = False,
             z_symmetry: bool = False,
             components: list[core.models.MultiblockComponent] | None = None,
             component_limits: dict[str, tuple[int, int]] | None = None
     ) -> None:
-        self.external_heat = external_heat
+        self.recipe_heat = recipe_heat
         self.x_symmetry = x_symmetry
         self.z_symmetry = z_symmetry
         self.components = components if not isinstance(components, type(None)) else models.DEFAULT_COMPONENTS
@@ -39,8 +39,8 @@ class NucleosynthesisDesigner(core.designer.Designer):
             core.constraints.SymmetryConstraint(1).to_model(model, seq, self.components)
         for component, (min_, max_) in self.component_limits.items():
             core.constraints.QuantityConstraint(component, max_, min_).to_model(model, seq, self.components)
-        model.Add(heating + self.external_heat <= cooling)
-        model.Minimize(cooling - (heating + self.external_heat))
+        model.Add(self.recipe_heat <= cooling)
+        model.Minimize(cooling - self.recipe_heat)
 
         solver = cp_model.CpSolver()
         if timeout:
