@@ -1,7 +1,7 @@
 """Tests for the `core.placement_rules` package."""
 
-from reiuji.core.models import MultiblockComponent
-from reiuji.core.placement_rules import parse_rule_string
+from reiuji.designer.core.models import MultiblockComponent
+from reiuji.designer.core.placement_rules import parse_rule_string
 
 from ortools.sat.python import cp_model
 

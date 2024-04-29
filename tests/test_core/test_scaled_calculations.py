@@ -1,6 +1,6 @@
 """Tests for the `core.scaled_calculations` module."""
 
-from reiuji.core.scaled_calculations import multiply, divide, sqrt, SCALE_FACTOR
+from reiuji.designer.core.scaled_calculations import multiply, divide, sqrt, SCALE_FACTOR
 
 from ortools.sat.python import cp_model
 

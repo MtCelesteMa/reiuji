@@ -1,7 +1,7 @@
 # Reiuji
 A library for designing NuclearCraft multiblocks.
 
-Reiuji is named after [Utsuho Reiuji](https://en.touhouwiki.net/wiki/Utsuho_Reiuji), a nuclear power plant operator and the main antagonist of [*Subterranean Animism*](https://en.touhouwiki.net/wiki/Subterranean_Animism).
+Reiuji is named after [Utsuho Reiuji](https://en.touhouwiki.net/wiki/Utsuho_Reiuji), the main antagonist of [*Subterranean Animism*](https://en.touhouwiki.net/wiki/Subterranean_Animism).
 
 ## Installation
 

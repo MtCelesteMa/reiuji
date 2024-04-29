@@ -1,6 +1,6 @@
 """Tests for the placement rule parser."""
 
-from reiuji.core.placement_rules import parse_rule_string
+from reiuji.designer.core.placement_rules import parse_rule_string
 
 
 RULE_STRINGS = [
