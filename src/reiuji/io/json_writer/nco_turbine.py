@@ -18,7 +18,7 @@ DYNAMOS = {
     "silver__coil": MCBlock(name="nuclearcraft:turbine_dynamo_coil", data=5)
 }
 SHAFT_X = MCBlock(name="nuclearcraft:turbine_rotor_shaft", data=1)
-SHAFT_Z = MCBlock(name="nuclearcraft:turbine_rotor_shaft", data=2)
+SHAFT_Z = MCBlock(name="nuclearcraft:turbine_rotor_shaft", data=3)
 ROTORS_X = {
     "steel__blade": MCBlock(name="nuclearcraft:turbine_rotor_blade_steel", data=1),
     "extreme__blade": MCBlock(name="nuclearcraft:turbine_rotor_blade_extreme", data=1),
