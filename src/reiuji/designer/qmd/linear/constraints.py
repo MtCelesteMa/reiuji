@@ -1,7 +1,7 @@
 """Constraints specific to QMD's linear accelerator designer."""
 
-from reiuji.core.models import MultiblockComponent
-from reiuji.core.multi_sequence import MultiSequence
+from reiuji.designer.core.models import MultiblockComponent
+from reiuji.designer.core.multi_sequence import MultiSequence
 from ... import core
 from . import models
 from . import calculations
