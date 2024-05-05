@@ -1,6 +1,7 @@
 """Calculations specific to the QMD nucleosynthesis chamber designer."""
 
-from ... import core
+from .... import core
+from ... import base
 from . import models
 
 import uuid
@@ -8,16 +9,16 @@ import uuid
 from ortools.sat.python import cp_model
 
 
-class TotalHeatingRate(core.calculations.Calculation):
+class TotalHeatingRate(base.calculations.Calculation):
     """Calculates the total heating rate of a nucleosynthesis chamber."""
-    def __call__(self, seq: core.multi_sequence.MultiSequence[core.models.MultiblockComponent]) -> float:
+    def __call__(self, seq: core.multi_sequence.MultiSequence[core.components.Component]) -> float:
         raise NotImplementedError("TotalHeatingRate.__call__ is not implemented.")
 
     def to_model(
             self,
             model: cp_model.CpModel,
             seq: core.multi_sequence.MultiSequence[cp_model.IntVar],
-            components: list[core.models.MultiblockComponent]
+            components: list[core.components.Component]
     ) -> cp_model.IntVar:
         type_to_id = dict()
         for i, component in enumerate(components):
@@ -36,16 +37,16 @@ class TotalHeatingRate(core.calculations.Calculation):
         return total_heating
 
 
-class TotalCoolingRate(core.calculations.Calculation):
+class TotalCoolingRate(base.calculations.Calculation):
     """Calculates the total cooling rate of a nucleosynthesis chamber."""
-    def __call__(self, seq: core.multi_sequence.MultiSequence[core.models.MultiblockComponent]) -> float:
+    def __call__(self, seq: core.multi_sequence.MultiSequence[core.components.Component]) -> float:
         raise NotImplementedError("TotalCoolingRate.__call__ is not implemented.")
 
     def to_model(
             self,
             model: cp_model.CpModel,
             seq: core.multi_sequence.MultiSequence[cp_model.IntVar],
-            components: list[core.models.MultiblockComponent]
+            components: list[core.components.Component]
     ) -> cp_model.IntVar:
         type_to_id = dict()
         for i, component in enumerate(components):

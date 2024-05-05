@@ -1,6 +1,7 @@
 """Calculations specific to NuclearCraft: Overhauled's turbine dynamo designer."""
 
-from ... import core
+from .... import core
+from ... import base
 from . import models
 
 import uuid
@@ -8,9 +9,9 @@ import uuid
 from ortools.sat.python import cp_model
 
 
-class TurbineDynamoConductivity(core.calculations.Calculation):
+class TurbineDynamoConductivity(base.calculations.Calculation):
     """Calculates the conductivity of a turbine dynamo configuration."""
-    def __call__(self, seq: core.multi_sequence.MultiSequence[core.models.MultiblockComponent]) -> float:
+    def __call__(self, seq: core.multi_sequence.MultiSequence[core.components.Component]) -> float:
         coil_count = 0
         bearing_count = 0
         total_conductivity = 0.0
@@ -28,7 +29,7 @@ class TurbineDynamoConductivity(core.calculations.Calculation):
             self,
             model: cp_model.CpModel,
             seq: core.multi_sequence.MultiSequence[cp_model.IntVar],
-            components: list[core.models.MultiblockComponent]
+            components: list[core.components.Component]
     ) -> cp_model.IntVar:
         type_to_id = dict()
         for i, component in enumerate(components):
@@ -36,7 +37,7 @@ class TurbineDynamoConductivity(core.calculations.Calculation):
                 type_to_id[component.type] =  [i]
             else:
                 type_to_id[component.type].append(i)
-        conductivities = [round(component.conductivity * core.scaled_calculations.SCALE_FACTOR) if isinstance(component, models.DynamoCoil) else 0 for component in components]
+        conductivities = [round(component.conductivity * base.scaled_calculations.SCALE_FACTOR) if isinstance(component, models.DynamoCoil) else 0 for component in components]
         
         is_coil = [model.NewBoolVar(str(uuid.uuid4())) for _ in seq]
         is_bearing = [model.NewBoolVar(str(uuid.uuid4())) for _ in seq]
@@ -57,22 +58,22 @@ class TurbineDynamoConductivity(core.calculations.Calculation):
         model.Add(bearing_count == sum(is_bearing))
         model.Add(total_conductivity == sum(conductivity_contrib))
 
-        coil_count_float = model.NewIntVar(0, len(seq) * core.scaled_calculations.SCALE_FACTOR, str(uuid.uuid4()))
-        model.AddMultiplicationEquality(coil_count_float, coil_count, core.scaled_calculations.SCALE_FACTOR)
-        bearing_count_float = model.NewIntVar(0, len(seq) * core.scaled_calculations.SCALE_FACTOR, str(uuid.uuid4()))
-        model.AddMultiplicationEquality(bearing_count_float, bearing_count, core.scaled_calculations.SCALE_FACTOR)
-        reduced_bearing_count_float = model.NewIntVar(0, len(seq) * core.scaled_calculations.SCALE_FACTOR, str(uuid.uuid4()))
+        coil_count_float = model.NewIntVar(0, len(seq) * base.scaled_calculations.SCALE_FACTOR, str(uuid.uuid4()))
+        model.AddMultiplicationEquality(coil_count_float, coil_count, base.scaled_calculations.SCALE_FACTOR)
+        bearing_count_float = model.NewIntVar(0, len(seq) * base.scaled_calculations.SCALE_FACTOR, str(uuid.uuid4()))
+        model.AddMultiplicationEquality(bearing_count_float, bearing_count, base.scaled_calculations.SCALE_FACTOR)
+        reduced_bearing_count_float = model.NewIntVar(0, len(seq) * base.scaled_calculations.SCALE_FACTOR, str(uuid.uuid4()))
         model.AddDivisionEquality(reduced_bearing_count_float, bearing_count_float, 2)
 
         more_coils = model.NewBoolVar(str(uuid.uuid4()))
         model.Add(coil_count_float >= reduced_bearing_count_float).OnlyEnforceIf(more_coils)
         model.Add(coil_count_float < reduced_bearing_count_float).OnlyEnforceIf(more_coils.Not())
-        reducing_factor = model.NewIntVar(50, len(seq) * core.scaled_calculations.SCALE_FACTOR, str(uuid.uuid4()))
+        reducing_factor = model.NewIntVar(50, len(seq) * base.scaled_calculations.SCALE_FACTOR, str(uuid.uuid4()))
         model.Add(reducing_factor == coil_count_float).OnlyEnforceIf(more_coils)
         model.Add(reducing_factor == reduced_bearing_count_float).OnlyEnforceIf(more_coils.Not())
 
         total_conductivity_ = model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4()))
-        model.AddMultiplicationEquality(total_conductivity_, total_conductivity, core.scaled_calculations.SCALE_FACTOR)
+        model.AddMultiplicationEquality(total_conductivity_, total_conductivity, base.scaled_calculations.SCALE_FACTOR)
 
         reduced_conductivity = model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4()))
         model.AddDivisionEquality(reduced_conductivity, total_conductivity_, reducing_factor)

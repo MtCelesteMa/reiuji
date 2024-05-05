@@ -1,14 +1,14 @@
 """Data models for the QMD synchrotron designer."""
 
-from ... import core
+from .... import core
 
 
-class Beam(core.models.MultiblockComponent):
+class Beam(core.components.Component):
     type: str = "beam"
     attenuation: float
 
 
-class Cavity(core.models.MultiblockComponent):
+class Cavity(core.components.Component):
     type: str = "cavity"
     voltage: int
     efficiency: float
@@ -16,7 +16,7 @@ class Cavity(core.models.MultiblockComponent):
     power: int
 
 
-class Magnet(core.models.MultiblockComponent):
+class Magnet(core.components.Component):
     type: str = "magnet"
     strength: float
     efficiency: float
@@ -24,15 +24,15 @@ class Magnet(core.models.MultiblockComponent):
     power: int
 
 
-class Cooler(core.models.MultiblockComponent):
+class Cooler(core.components.Component):
     type: str = "cooler"
     cooling: int
 
 
-DEFAULT_COMPONENTS: list[core.models.MultiblockComponent] = [
-    core.models.MultiblockComponent(name="", type="air"),
-    core.models.MultiblockComponent(name="", type="casing", short_name="X "),
-    core.models.MultiblockComponent(name="", type="yoke", short_name="Y "),
+DEFAULT_COMPONENTS: list[core.components.Component] = [
+    core.components.Component(name="", type="air"),
+    core.components.Component(name="", type="casing", short_name="X "),
+    core.components.Component(name="", type="yoke", short_name="Y "),
     Beam(name="", attenuation=0.02, short_name="0 "),
     Cavity(name="copper", voltage=200, efficiency=0.5, heat=300, power=500, short_name="\033[1mCu\033[0m"),
     Cavity(name="magnesium_diboride", voltage=500, efficiency=0.8, heat=580, power=1000, short_name="\033[1mMg\033[0m"),

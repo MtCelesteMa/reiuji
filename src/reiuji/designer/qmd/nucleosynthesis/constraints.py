@@ -1,6 +1,7 @@
 """Constraints specific to the QMD nucleosynthesis chamber designer."""
 
-from ... import core
+from .... import core
+from ... import base
 from . import models
 
 import uuid
@@ -9,16 +10,16 @@ import itertools
 from ortools.sat.python import cp_model
 
 
-class StructureConstraint(core.constraints.Constraint):
+class StructureConstraint(base.constraints.Constraint):
     """Ensures that the internal structure of the chamber is correct."""
-    def is_satisfied(self, seq: core.multi_sequence.MultiSequence[core.models.MultiblockComponent]) -> bool:
+    def is_satisfied(self, seq: core.multi_sequence.MultiSequence[core.components.Component]) -> bool:
         raise NotImplementedError("StructureConstraint.is_satisfied is not implemented.")
 
     def to_model(
         self,
         model: cp_model.CpModel,
         seq: core.multi_sequence.MultiSequence[cp_model.IntVar],
-        components: list[core.models.MultiblockComponent]
+        components: list[core.components.Component]
     ) -> None:
         if seq.shape != (5, 11, 7):
             raise ValueError("StructureConstraint requires a 5x11x7 sequence.")

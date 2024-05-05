@@ -1,6 +1,7 @@
 """Constraints specific to the QMD decelerator designer."""
 
-from ... import core
+from .... import core
+from ... import base
 from .. import synchrotron
 
 import uuid
@@ -8,7 +9,7 @@ import uuid
 from ortools.sat.python import cp_model
 
 
-class EnergyConstraint(core.constraints.Constraint):
+class EnergyConstraint(base.constraints.Constraint):
     """Ensures that the maximum acceptable energy is greater than a given value."""
     def __init__(self, minimum_energy: int, maximum_energy: int, charge: float, radius: float, mass: float) -> None:
         self.minimum_energy = minimum_energy
@@ -17,30 +18,30 @@ class EnergyConstraint(core.constraints.Constraint):
         self.radius = radius
         self.mass = mass
     
-    def is_satisfied(self, seq: core.multi_sequence.MultiSequence[core.models.MultiblockComponent]) -> bool:
+    def is_satisfied(self, seq: core.multi_sequence.MultiSequence[core.components.Component]) -> bool:
         raise NotImplementedError("EnergyConstraint.is_satisfied is not implemented.")
 
     def to_model(
         self,
         model: cp_model.CpModel,
         seq: core.multi_sequence.MultiSequence[cp_model.IntVar],
-        components: list[core.models.MultiblockComponent]
+        components: list[core.components.Component]
     ) -> None:
         dipole_energy = synchrotron.calculations.MaxDipoleEnergy(self.charge, self.radius, self.mass).to_model(model, seq, components)
         model.Add(dipole_energy >= self.minimum_energy)
         model.Add(dipole_energy <= self.maximum_energy)
 
 
-class OneCavityConstraint(core.constraints.Constraint):
+class OneCavityConstraint(base.constraints.Constraint):
     """Ensures that only one cavity is present in the structure."""
-    def is_satisfied(self, seq: core.multi_sequence.MultiSequence[core.models.MultiblockComponent]) -> bool:
+    def is_satisfied(self, seq: core.multi_sequence.MultiSequence[core.components.Component]) -> bool:
         raise NotImplementedError("EnergyConstraint.is_satisfied is not implemented.")
 
     def to_model(
         self,
         model: cp_model.CpModel,
         seq: core.multi_sequence.MultiSequence[cp_model.IntVar],
-        components: list[core.models.MultiblockComponent]
+        components: list[core.components.Component]
     ) -> None:
         type_to_id = dict()
         for i, component in enumerate(components):

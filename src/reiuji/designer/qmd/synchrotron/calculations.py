@@ -1,6 +1,7 @@
 """Calculations specific to designing QMD synchrotrons."""
 
-from ... import core
+from .... import core
+from ... import base
 from . import models
 
 import uuid
@@ -8,9 +9,9 @@ import uuid
 from ortools.sat.python import cp_model
 
 
-class TotalHeatingRate(core.calculations.Calculation):
+class TotalHeatingRate(base.calculations.Calculation):
     """Calculates the total heating rate of a linear accelerator configuration."""
-    def __call__(self, seq: core.multi_sequence.MultiSequence[core.models.MultiblockComponent]) -> float:
+    def __call__(self, seq: core.multi_sequence.MultiSequence[core.components.Component]) -> float:
         total_heating_rate = 0
         # North side
         for z in range(2, seq.shape[1] - 2):
@@ -34,7 +35,7 @@ class TotalHeatingRate(core.calculations.Calculation):
             self,
             model: cp_model.CpModel,
             seq: core.multi_sequence.MultiSequence[cp_model.IntVar],
-            components: list[core.models.MultiblockComponent]
+            components: list[core.components.Component]
     ) -> cp_model.IntVar:
         type_to_id = dict()
         for i, component in enumerate(components):
@@ -79,9 +80,9 @@ class TotalHeatingRate(core.calculations.Calculation):
         return total_heating_rate
 
 
-class TotalCoolingRate(core.calculations.Calculation):
+class TotalCoolingRate(base.calculations.Calculation):
     """Calculates the total cooling rate of a linear accelerator configuration."""
-    def __call__(self, seq: core.multi_sequence.MultiSequence[core.models.MultiblockComponent]) -> float:
+    def __call__(self, seq: core.multi_sequence.MultiSequence[core.components.Component]) -> float:
         total_cooling_rate = 0
         for i, component in enumerate(seq):
             if isinstance(component, models.Cooler):
@@ -92,7 +93,7 @@ class TotalCoolingRate(core.calculations.Calculation):
             self,
             model: cp_model.CpModel,
             seq: core.multi_sequence.MultiSequence[cp_model.IntVar],
-            components: list[core.models.MultiblockComponent]
+            components: list[core.components.Component]
     ) -> cp_model.IntVar:
         type_to_id = dict()
         for i, component in enumerate(components):
@@ -112,13 +113,13 @@ class TotalCoolingRate(core.calculations.Calculation):
         return total_cooling_rate
 
 
-class MaxDipoleEnergy(core.calculations.Calculation):
+class MaxDipoleEnergy(base.calculations.Calculation):
     def __init__(self, charge: float, radius: float, mass: float) -> None:
         self.charge = charge
         self.radius = radius
         self.mass = mass
     
-    def __call__(self, seq: core.multi_sequence.MultiSequence[core.models.MultiblockComponent]) -> float:
+    def __call__(self, seq: core.multi_sequence.MultiSequence[core.components.Component]) -> float:
         dipole_strength = 0.0
         # North side
         for z in range(2, seq.shape[1] - 2):
@@ -142,7 +143,7 @@ class MaxDipoleEnergy(core.calculations.Calculation):
             self,
             model: cp_model.CpModel,
             seq: core.multi_sequence.MultiSequence[cp_model.IntVar],
-            components: list[core.models.MultiblockComponent]
+            components: list[core.components.Component]
     ) -> cp_model.IntVar:
         type_to_id = dict()
         for i, component in enumerate(components):
@@ -217,24 +218,24 @@ class MaxDipoleEnergy(core.calculations.Calculation):
         model.Add(total_strength == sum([total_strength_N, total_strength_S, total_strength_W, total_strength_E]))
 
         total_strength_sq = model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4()))
-        core.scaled_calculations.multiply(model, total_strength_sq, total_strength, total_strength, scale_factor=10)
+        base.scaled_calculations.multiply(model, total_strength_sq, total_strength, total_strength, scale_factor=10)
 
         multiplier = (self.charge * self.radius) ** 2 / (2 * self.mass)
-        multiplier = round(multiplier * core.scaled_calculations.SCALE_FACTOR)
+        multiplier = round(multiplier * base.scaled_calculations.SCALE_FACTOR)
 
         dipole_energy = model.NewIntVar(0, 2 ** 48 - 1, str(uuid.uuid4()))
-        core.scaled_calculations.multiply(model, dipole_energy, total_strength_sq, multiplier, max_value=2 ** 48 - 1, scale_factor=10)
+        base.scaled_calculations.multiply(model, dipole_energy, total_strength_sq, multiplier, max_value=2 ** 48 - 1, scale_factor=10)
 
         return dipole_energy
 
 
-class MaxRadiationLoss(core.calculations.Calculation):
+class MaxRadiationLoss(base.calculations.Calculation):
     def __init__(self, charge: float, radius: float, mass: float) -> None:
         self.charge = charge
         self.radius = radius
         self.mass = mass
     
-    def __call__(self, seq: core.multi_sequence.MultiSequence[core.models.MultiblockComponent]) -> float:
+    def __call__(self, seq: core.multi_sequence.MultiSequence[core.components.Component]) -> float:
         total_voltage = 0
         # North side
         for z in range(2, seq.shape[1] - 2):
@@ -259,7 +260,7 @@ class MaxRadiationLoss(core.calculations.Calculation):
             self,
             model: cp_model.CpModel,
             seq: core.multi_sequence.MultiSequence[cp_model.IntVar],
-            components: list[core.models.MultiblockComponent]
+            components: list[core.components.Component]
     ) -> cp_model.IntVar:
         type_to_id = dict()
         for i, component in enumerate(components):
@@ -305,31 +306,31 @@ class MaxRadiationLoss(core.calculations.Calculation):
         model.Add(sum([total_voltage_N, total_voltage_S, total_voltage_W, total_voltage_E]) == total_voltage)
 
         total_voltage_sqrt = model.NewIntVar(1, cp_model.INT32_MAX, str(uuid.uuid4()))
-        core.scaled_calculations.sqrt(model, total_voltage_sqrt, total_voltage, scale_factor=1)
+        base.scaled_calculations.sqrt(model, total_voltage_sqrt, total_voltage, scale_factor=1)
 
         total_voltage_sqrt_ =  model.NewIntVar(1, cp_model.INT32_MAX, str(uuid.uuid4()))
-        model.AddMultiplicationEquality(total_voltage_sqrt_, total_voltage_sqrt, core.scaled_calculations.SCALE_FACTOR)
+        model.AddMultiplicationEquality(total_voltage_sqrt_, total_voltage_sqrt, base.scaled_calculations.SCALE_FACTOR)
 
         total_voltage_4rt = model.NewIntVar(1, cp_model.INT32_MAX, str(uuid.uuid4()))
-        core.scaled_calculations.sqrt(model, total_voltage_4rt, total_voltage_sqrt_)
+        base.scaled_calculations.sqrt(model, total_voltage_4rt, total_voltage_sqrt_)
 
         multiplier = self.mass * (3 * self.radius / abs(self.charge)) ** (1 / 4)
-        multiplier = round(multiplier * core.scaled_calculations.SCALE_FACTOR)
+        multiplier = round(multiplier * base.scaled_calculations.SCALE_FACTOR)
 
         radiation_energy = model.NewIntVar(0, 2 ** 48 - 1, str(uuid.uuid4()))
-        core.scaled_calculations.multiply(model, radiation_energy, total_voltage_4rt, multiplier, max_value=2 ** 48 - 1)
+        base.scaled_calculations.multiply(model, radiation_energy, total_voltage_4rt, multiplier, max_value=2 ** 48 - 1)
 
         return radiation_energy
 
 
-class BeamFocus(core.calculations.Calculation):
+class BeamFocus(base.calculations.Calculation):
     def __init__(self, charge: float, beam_strength: int, scaling_factor: int = 10000, initial_focus: float = 0.0) -> None:
         self.charge = charge
         self.beam_strength = beam_strength
         self.scaling_factor = scaling_factor
         self.initial_focus = initial_focus
     
-    def __call__(self, seq: core.multi_sequence.MultiSequence[core.models.MultiblockComponent]) -> float:
+    def __call__(self, seq: core.multi_sequence.MultiSequence[core.components.Component]) -> float:
         quadrupole_strength = 0.0
         # North side
         for z in range(2, seq.shape[1] - 2):
@@ -356,7 +357,7 @@ class BeamFocus(core.calculations.Calculation):
             self,
             model: cp_model.CpModel,
             seq: core.multi_sequence.MultiSequence[cp_model.IntVar],
-            components: list[core.models.MultiblockComponent]
+            components: list[core.components.Component]
     ) -> cp_model.IntVar:
         type_to_id = dict()
         for i, component in enumerate(components):
@@ -365,7 +366,7 @@ class BeamFocus(core.calculations.Calculation):
             else:
                 type_to_id[component.type].append(i)
         yoke_ids = type_to_id["yoke"]
-        strengths = [round(component.strength * core.scaled_calculations.SCALE_FACTOR) if isinstance(component, models.Magnet) else 0 for component in components]
+        strengths = [round(component.strength * base.scaled_calculations.SCALE_FACTOR) if isinstance(component, models.Magnet) else 0 for component in components]
 
         # North side
         strength_contrib_N = [model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4())) for _ in range(seq.shape[1] - 4)]
@@ -431,22 +432,22 @@ class BeamFocus(core.calculations.Calculation):
         model.Add(total_strength == sum([total_strength_N, total_strength_S, total_strength_W, total_strength_E]))
 
         beams = (seq.shape[0] - 4) * 4 - 4
-        focus_loss = round(0.02 * (1 + abs(self.charge) * (self.beam_strength / self.scaling_factor) ** (1 / 2)) * core.scaled_calculations.SCALE_FACTOR) * beams
+        focus_loss = round(0.02 * (1 + abs(self.charge) * (self.beam_strength / self.scaling_factor) ** (1 / 2)) * base.scaled_calculations.SCALE_FACTOR) * beams
 
         focus_gain = model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4()))
-        core.scaled_calculations.multiply(model, focus_gain, total_strength, round(abs(self.charge) * core.scaled_calculations.SCALE_FACTOR))
+        base.scaled_calculations.multiply(model, focus_gain, total_strength, round(abs(self.charge) * base.scaled_calculations.SCALE_FACTOR))
 
         focus_delta = model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4()))
         model.Add(focus_delta == focus_gain - focus_loss)
 
         focus = model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4()))
-        model.Add(focus == focus_delta + round(self.initial_focus * core.scaled_calculations.SCALE_FACTOR))
+        model.Add(focus == focus_delta + round(self.initial_focus * base.scaled_calculations.SCALE_FACTOR))
 
         return focus
     
 
-class PowerRequirement(core.calculations.Calculation):
-    def __call__(self, seq: core.multi_sequence.MultiSequence[core.models.MultiblockComponent]) -> float:
+class PowerRequirement(base.calculations.Calculation):
+    def __call__(self, seq: core.multi_sequence.MultiSequence[core.components.Component]) -> float:
         efficiency = 0.0
         parts = 0
         raw_power = 0
@@ -480,7 +481,7 @@ class PowerRequirement(core.calculations.Calculation):
             self,
             model: cp_model.CpModel,
             seq: core.multi_sequence.MultiSequence[cp_model.IntVar],
-            components: list[core.models.MultiblockComponent]
+            components: list[core.components.Component]
     ) -> cp_model.IntVar:
         type_to_id = dict()
         for i, component in enumerate(components):
@@ -489,7 +490,7 @@ class PowerRequirement(core.calculations.Calculation):
             else:
                 type_to_id[component.type].append(i)
         powers = [component.power if isinstance(component, (models.Cavity, models.Magnet)) else 0 for component in components]
-        efficiencies = [round(component.efficiency * core.scaled_calculations.SCALE_FACTOR) if isinstance(component, (models.Cavity, models.Magnet)) else 0 for component in components]
+        efficiencies = [round(component.efficiency * base.scaled_calculations.SCALE_FACTOR) if isinstance(component, (models.Cavity, models.Magnet)) else 0 for component in components]
         is_part = [1 if isinstance(component, (models.Cavity, models.Magnet)) else 0 for component in components]
 
         # North side
@@ -567,7 +568,7 @@ class PowerRequirement(core.calculations.Calculation):
         model.AddDivisionEquality(reduced_efficiency, efficiency, parts)
 
         raw_power_ = model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4()))
-        model.AddMultiplicationEquality(raw_power_, raw_power, core.scaled_calculations.SCALE_FACTOR)
+        model.AddMultiplicationEquality(raw_power_, raw_power, base.scaled_calculations.SCALE_FACTOR)
 
         power_requirement = model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4()))
         model.AddDivisionEquality(power_requirement, raw_power_, reduced_efficiency)

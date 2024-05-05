@@ -1,5 +1,6 @@
 """A multi-dimensional sequence."""
 
+import typing
 from collections import abc
 import math
 
@@ -53,9 +54,21 @@ class MultiSequence[E](abc.Sequence[E], abc.Iterable[E]):
             tuple[int, ...]: A tuple of indices representing the position in the multi-sequence.
         """
         return tuple((index // math.prod(self.shape[i + 1:])) % self.shape[i] for i in range(len(self.shape)))
+
+    @typing.overload
+    def __getitem__(self, index: int) -> E:
+        ...
     
-    def __getitem__(self, index: int | tuple[int, ...]) -> E:
-        if isinstance(index, int):
+    @typing.overload
+    def __getitem__(self, index: slice) -> abc.Sequence[E]:
+        ...
+
+    @typing.overload
+    def __getitem__(self, index: tuple[int, ...]) -> E:
+        ...
+
+    def __getitem__(self, index: int | slice | tuple[int, ...]) -> E | abc.Sequence[E]:
+        if isinstance(index, (int, slice)):
             return self.seq[index]
         elif isinstance(index, tuple):
             return self.seq[self.index_tuple_to_int(index)]
@@ -82,4 +95,3 @@ class MultiSequence[E](abc.Sequence[E], abc.Iterable[E]):
         left = None if index[axis] == 0 else self[index[:axis] + (index[axis] - 1,) + index[axis + 1:]]
         right = None if index[axis] == self.shape[axis] - 1 else self[index[:axis] + (index[axis] + 1,) + index[axis + 1:]]
         return left, right
-

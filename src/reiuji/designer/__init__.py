@@ -1,5 +1,5 @@
 """Designer module for Reiuji."""
 
-from . import core
+from . import base
 from . import overhauled
 from . import qmd

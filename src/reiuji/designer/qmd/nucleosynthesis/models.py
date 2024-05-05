@@ -1,34 +1,34 @@
 """Data models for QMD nucleosynthesis chamber designer."""
 
-from ... import core
+from .... import core
 
 
-class Beam(core.models.MultiblockComponent):
+class Beam(core.components.Component):
     type: str = "beam"
     power: int
     heat: int
 
 
-class Glass(core.models.MultiblockComponent):
+class Glass(core.components.Component):
     type: str = "glass"
     power: int
     heat: int
 
 
-class Nozzle(core.models.MultiblockComponent):
+class Nozzle(core.components.Component):
     type: str = "nozzle"
     power: int
     heat: int
 
 
-class Heater(core.models.MultiblockComponent):
+class Heater(core.components.Component):
     type: str = "heater"
     cooling: int
 
 
-DEFAULT_COMPONENTS: list[core.models.MultiblockComponent] = [
-    core.models.MultiblockComponent(name="", type="air"),
-    core.models.MultiblockComponent(name="", type="casing", short_name="X "),
+DEFAULT_COMPONENTS: list[core.components.Component] = [
+    core.components.Component(name="", type="air"),
+    core.components.Component(name="", type="casing", short_name="X "),
     Beam(name="", power=500, heat=100, short_name="=="),
     Glass(name="", power=500, heat=100, short_name="[]"),
     Nozzle(name="", power=1000, heat=500, short_name="<>"),
