@@ -6,7 +6,7 @@ import pydantic
 class MCBlock(pydantic.BaseModel):
     name: str
     data: int = 0
-    is_tile_entity: bool = False
+    is_tile_entity: bool = True
     properties: dict[str, str] = pydantic.Field(default_factory=dict)
 
 

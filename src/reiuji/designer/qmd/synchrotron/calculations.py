@@ -15,19 +15,19 @@ class TotalHeatingRate(base.calculations.Calculation):
         total_heating_rate = 0
         # North side
         for z in range(2, seq.shape[1] - 2):
-            if isinstance(seq[2, z, 3], (models.Cavity, models.Magnet)):
+            if isinstance(seq[2, z, 3], (models.AcceleratorCavity, models.AcceleratorMagnet)):
                 total_heating_rate += seq[2, z, 3].heat
         # South side
         for z in range(2, seq.shape[1] - 2):
-            if isinstance(seq[seq.shape[0] - 3, z, 3], (models.Cavity, models.Magnet)):
+            if isinstance(seq[seq.shape[0] - 3, z, 3], (models.AcceleratorCavity, models.AcceleratorMagnet)):
                 total_heating_rate += seq[seq.shape[0] - 3, z, 3].heat
         # West side
         for x in range(4, seq.shape[0] - 4):
-            if isinstance(seq[x, 2, 3], (models.Cavity, models.Magnet)):
+            if isinstance(seq[x, 2, 3], (models.AcceleratorCavity, models.AcceleratorMagnet)):
                 total_heating_rate += seq[x, 2, 3].heat
         # East side
         for x in range(4, seq.shape[0] - 4):
-            if isinstance(seq[x, seq.shape[1] - 3, 3], (models.Cavity, models.Magnet)):
+            if isinstance(seq[x, seq.shape[1] - 3, 3], (models.AcceleratorCavity, models.AcceleratorMagnet)):
                 total_heating_rate += seq[x, seq.shape[1] - 3, 3].heat
         return total_heating_rate
     
@@ -43,7 +43,7 @@ class TotalHeatingRate(base.calculations.Calculation):
                 type_to_id[component.type] = [i]
             else:
                 type_to_id[component.type].append(i)
-        heating_rates = [component.heat if isinstance(component, (models.Cavity, models.Magnet)) else 0 for component in components]
+        heating_rates = [component.heat if isinstance(component, (models.AcceleratorCavity, models.AcceleratorMagnet)) else 0 for component in components]
 
         # North side
         heat_contrib_N = [model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4())) for _ in range(seq.shape[1] - 4)]
@@ -85,7 +85,7 @@ class TotalCoolingRate(base.calculations.Calculation):
     def __call__(self, seq: core.multi_sequence.MultiSequence[core.components.Component]) -> float:
         total_cooling_rate = 0
         for i, component in enumerate(seq):
-            if isinstance(component, models.Cooler):
+            if isinstance(component, models.AcceleratorCooler):
                 total_cooling_rate += component.cooling
         return total_cooling_rate
 
@@ -101,7 +101,7 @@ class TotalCoolingRate(base.calculations.Calculation):
                 type_to_id[component.type] = [i]
             else:
                 type_to_id[component.type].append(i)
-        cooling_rates = [component.cooling if isinstance(component, models.Cooler) else 0 for component in components]
+        cooling_rates = [component.cooling if isinstance(component, models.AcceleratorCooler) else 0 for component in components]
 
         cool_contrib = [model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4())) for _ in seq]
         for i, component in enumerate(seq):
@@ -123,19 +123,19 @@ class MaxDipoleEnergy(base.calculations.Calculation):
         dipole_strength = 0.0
         # North side
         for z in range(2, seq.shape[1] - 2):
-            if isinstance(seq[2, z, 3], models.Magnet) and seq[1, z, 3].type == "yoke":
+            if isinstance(seq[2, z, 3], models.AcceleratorMagnet) and seq[1, z, 3].type == "yoke":
                 dipole_strength += seq[2, z, 3].strength
         # South side
         for z in range(2, seq.shape[1] - 2):
-            if isinstance(seq[seq.shape[0] - 3, z, 3], models.Magnet) and seq[seq.shape[0] - 2, z, 3].type == "yoke":
+            if isinstance(seq[seq.shape[0] - 3, z, 3], models.AcceleratorMagnet) and seq[seq.shape[0] - 2, z, 3].type == "yoke":
                 dipole_strength += seq[seq.shape[0] - 3, z, 3].strength
         # West side
         for x in range(4, seq.shape[0] - 4):
-            if isinstance(seq[x, 2, 3], models.Magnet) and seq[x, 1, 3].type == "yoke":
+            if isinstance(seq[x, 2, 3], models.AcceleratorMagnet) and seq[x, 1, 3].type == "yoke":
                 dipole_strength += seq[x, 2, 3].strength
         # East side
         for x in range(4, seq.shape[0] - 4):
-            if isinstance(seq[x, seq.shape[1] - 3, 3], models.Magnet) and seq[x, seq.shape[1] - 2, 3].type == "yoke":
+            if isinstance(seq[x, seq.shape[1] - 3, 3], models.AcceleratorMagnet) and seq[x, seq.shape[1] - 2, 3].type == "yoke":
                 dipole_strength += seq[x, seq.shape[1] - 3, 3].strength
         return ((self.charge * self.radius * dipole_strength) ** 2) / (2 * self.mass) * 1000
     
@@ -152,7 +152,7 @@ class MaxDipoleEnergy(base.calculations.Calculation):
             else:
                 type_to_id[component.type].append(i)
         yoke_ids = type_to_id["yoke"]
-        strengths = [round(component.strength * 10) if isinstance(component, models.Magnet) else 0 for component in components]
+        strengths = [round(component.strength * 10) if isinstance(component, models.AcceleratorMagnet) else 0 for component in components]
 
         # North side
         strength_contrib_N = [model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4())) for _ in range(seq.shape[1] - 4)]
@@ -239,19 +239,19 @@ class MaxRadiationLoss(base.calculations.Calculation):
         total_voltage = 0
         # North side
         for z in range(2, seq.shape[1] - 2):
-            if isinstance(seq[2, z, 3], models.Cavity):
+            if isinstance(seq[2, z, 3], models.AcceleratorCavity):
                 total_voltage += seq[2, z, 3].voltage
         # South side
         for z in range(2, seq.shape[1] - 2):
-            if isinstance(seq[seq.shape[0] - 3, z, 3], models.Cavity):
+            if isinstance(seq[seq.shape[0] - 3, z, 3], models.AcceleratorCavity):
                 total_voltage += seq[seq.shape[0] - 3, z, 3].voltage
         # West side
         for x in range(4, seq.shape[0] - 4):
-            if isinstance(seq[x, 2, 3], models.Cavity):
+            if isinstance(seq[x, 2, 3], models.AcceleratorCavity):
                 total_voltage += seq[x, 2, 3].voltage
         # East side
         for x in range(4, seq.shape[0] - 4):
-            if isinstance(seq[x, seq.shape[1] - 3, 3], models.Cavity):
+            if isinstance(seq[x, seq.shape[1] - 3, 3], models.AcceleratorCavity):
                 total_voltage += seq[x, seq.shape[1] - 3, 3].voltage
         
         return self.mass * (3 * total_voltage * self.radius / abs(self.charge)) ** (1 / 4) * 1000
@@ -268,7 +268,7 @@ class MaxRadiationLoss(base.calculations.Calculation):
                 type_to_id[component.type] = [i]
             else:
                 type_to_id[component.type].append(i)
-        voltages = [component.voltage if isinstance(component, models.Cavity) else 0 for component in components]
+        voltages = [component.voltage if isinstance(component, models.AcceleratorCavity) else 0 for component in components]
 
         # North side
         voltage_contrib_N = [model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4())) for _ in range(seq.shape[1] - 4)]
@@ -334,19 +334,19 @@ class BeamFocus(base.calculations.Calculation):
         quadrupole_strength = 0.0
         # North side
         for z in range(2, seq.shape[1] - 2):
-            if isinstance(seq[2, z, 3], models.Magnet) and seq[1, z, 3].type != "yoke":
+            if isinstance(seq[2, z, 3], models.AcceleratorMagnet) and seq[1, z, 3].type != "yoke":
                 quadrupole_strength += seq[2, z, 3].strength
         # South side
         for z in range(2, seq.shape[1] - 2):
-            if isinstance(seq[seq.shape[0] - 3, z, 3], models.Magnet) and seq[seq.shape[0] - 2, z, 3].type != "yoke":
+            if isinstance(seq[seq.shape[0] - 3, z, 3], models.AcceleratorMagnet) and seq[seq.shape[0] - 2, z, 3].type != "yoke":
                 quadrupole_strength += seq[seq.shape[0] - 3, z, 3].strength
         # West side
         for x in range(4, seq.shape[0] - 4):
-            if isinstance(seq[x, 2, 3], models.Magnet) and seq[x, 1, 3].type != "yoke":
+            if isinstance(seq[x, 2, 3], models.AcceleratorMagnet) and seq[x, 1, 3].type != "yoke":
                 quadrupole_strength += seq[x, 2, 3].strength
         # East side
         for x in range(4, seq.shape[0] - 4):
-            if isinstance(seq[x, seq.shape[1] - 3, 3], models.Magnet) and seq[x, seq.shape[1] - 2, 3].type != "yoke":
+            if isinstance(seq[x, seq.shape[1] - 3, 3], models.AcceleratorMagnet) and seq[x, seq.shape[1] - 2, 3].type != "yoke":
                 quadrupole_strength += seq[x, seq.shape[1] - 3, 3].strength
         beams = (seq.shape[0] - 4) * 4 - 4
         focus_loss = beams * 0.02 * (1 + abs(self.charge) * (self.beam_strength / self.scaling_factor) ** (1 / 2))
@@ -366,7 +366,7 @@ class BeamFocus(base.calculations.Calculation):
             else:
                 type_to_id[component.type].append(i)
         yoke_ids = type_to_id["yoke"]
-        strengths = [round(component.strength * base.scaled_calculations.SCALE_FACTOR) if isinstance(component, models.Magnet) else 0 for component in components]
+        strengths = [round(component.strength * base.scaled_calculations.SCALE_FACTOR) if isinstance(component, models.AcceleratorMagnet) else 0 for component in components]
 
         # North side
         strength_contrib_N = [model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4())) for _ in range(seq.shape[1] - 4)]
@@ -453,25 +453,25 @@ class PowerRequirement(base.calculations.Calculation):
         raw_power = 0
         # North side
         for z in range(2, seq.shape[1] - 2):
-            if isinstance(seq[2, z, 3], (models.Cavity, models.Magnet)):
+            if isinstance(seq[2, z, 3], (models.AcceleratorCavity, models.AcceleratorMagnet)):
                 raw_power += seq[2, z, 3].power
                 efficiency += seq[2, z, 3].efficiency
                 parts += 1
         # South side
         for z in range(2, seq.shape[1] - 2):
-            if isinstance(seq[seq.shape[0] - 3, z, 3], (models.Cavity, models.Magnet)):
+            if isinstance(seq[seq.shape[0] - 3, z, 3], (models.AcceleratorCavity, models.AcceleratorMagnet)):
                 raw_power += seq[seq.shape[0] - 3, z, 3].power
                 efficiency += seq[seq.shape[0] - 3, z, 3].efficiency
                 parts += 1
         # West side
         for x in range(4, seq.shape[0] - 4):
-            if isinstance(seq[x, 2, 3], (models.Cavity, models.Magnet)):
+            if isinstance(seq[x, 2, 3], (models.AcceleratorCavity, models.AcceleratorMagnet)):
                 raw_power += seq[x, 2, 3].power
                 efficiency += seq[x, 2, 3].efficiency
                 parts += 1
         # East side
         for x in range(4, seq.shape[0] - 4):
-            if isinstance(seq[x, seq.shape[1] - 3, 3], (models.Cavity, models.Magnet)):
+            if isinstance(seq[x, seq.shape[1] - 3, 3], (models.AcceleratorCavity, models.AcceleratorMagnet)):
                 raw_power += seq[x, seq.shape[1] - 3, 3].power
                 efficiency += seq[x, seq.shape[1] - 3, 3].efficiency
                 parts += 1
@@ -489,9 +489,9 @@ class PowerRequirement(base.calculations.Calculation):
                 type_to_id[component.type] = [i]
             else:
                 type_to_id[component.type].append(i)
-        powers = [component.power if isinstance(component, (models.Cavity, models.Magnet)) else 0 for component in components]
-        efficiencies = [round(component.efficiency * base.scaled_calculations.SCALE_FACTOR) if isinstance(component, (models.Cavity, models.Magnet)) else 0 for component in components]
-        is_part = [1 if isinstance(component, (models.Cavity, models.Magnet)) else 0 for component in components]
+        powers = [component.power if isinstance(component, (models.AcceleratorCavity, models.AcceleratorMagnet)) else 0 for component in components]
+        efficiencies = [round(component.efficiency * base.scaled_calculations.SCALE_FACTOR) if isinstance(component, (models.AcceleratorCavity, models.AcceleratorMagnet)) else 0 for component in components]
+        is_part = [1 if isinstance(component, (models.AcceleratorCavity, models.AcceleratorMagnet)) else 0 for component in components]
 
         # North side
         raw_power_contrib_N = [model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4())) for _ in range(seq.shape[1] - 4)]

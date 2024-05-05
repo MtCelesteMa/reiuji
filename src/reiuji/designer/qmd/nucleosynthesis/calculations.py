@@ -26,7 +26,7 @@ class TotalHeatingRate(base.calculations.Calculation):
                 type_to_id[component.type] = [i]
             else:
                 type_to_id[component.type].append(i)
-        heating_rates = [component.heat if isinstance(component, (models.Beam, models.Glass, models.Nozzle)) else 0 for component in components]
+        heating_rates = [component.heat if isinstance(component, (models.NucleosynthesisBeam, models.PlasmaGlass, models.PlasmaNozzle)) else 0 for component in components]
 
         heat_contrib = [model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4())) for _ in range(len(seq))]
         for i, component in enumerate(seq):
@@ -54,7 +54,7 @@ class TotalCoolingRate(base.calculations.Calculation):
                 type_to_id[component.type] = [i]
             else:
                 type_to_id[component.type].append(i)
-        cooling_rates = [component.cooling if isinstance(component, models.Heater) else 0 for component in components]
+        cooling_rates = [component.cooling if isinstance(component, models.NucleosynthesisHeater) else 0 for component in components]
 
         cooling_contrib = [model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4())) for _ in range(len(seq))]
         for i, component in enumerate(seq):
