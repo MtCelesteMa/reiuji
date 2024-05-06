@@ -54,9 +54,9 @@ DEFAULT_COMPONENTS: list[core.components.Component] = [
         expansion=1.9,
         short_name="Su",
         block={
-            "x": core.components.MCBlock(name="nuclearcraft:turbine_rotor_blade_super", data=1),
-            "y": core.components.MCBlock(name="nuclearcraft:turbine_rotor_blade_super", data=2),
-            "z": core.components.MCBlock(name="nuclearcraft:turbine_rotor_blade_super", data=3)
+            "x": core.components.MCBlock(name="qmd:turbine_blade_super_alloy", data=1),
+            "y": core.components.MCBlock(name="qmd:turbine_blade_super_alloy", data=2),
+            "z": core.components.MCBlock(name="qmd:turbine_blade_super_alloy", data=3)
         }
     ),
     RotorStator(

@@ -190,13 +190,6 @@ DEFAULT_COMPONENTS: list[core.components.Component] = [
         block={"": core.components.MCBlock(name="qmd:accelerator_cooler1", data=6)}
     ),
     AcceleratorCooler(
-        name="lapis",
-        cooling=130,
-        placement_rule="one yoke && one magnet",
-        short_name="Lp",
-        block={"": core.components.MCBlock(name="qmd:accelerator_cooler1", data=7)}
-    ),
-    AcceleratorCooler(
         name="gold",
         cooling=95,
         placement_rule="two iron coolers",
@@ -216,20 +209,6 @@ DEFAULT_COMPONENTS: list[core.components.Component] = [
         placement_rule="two lead coolers && one water cooler",
         short_name="Sl",
         block={"": core.components.MCBlock(name="qmd:accelerator_cooler1", data=10)}
-    ),
-    AcceleratorCooler(
-        name="end_stone",
-        cooling=50,
-        placement_rule="one yoke",
-        short_name="Es",
-        block={"": core.components.MCBlock(name="qmd:accelerator_cooler1", data=11)}
-    ),
-    AcceleratorCooler(
-        name="purpur",
-        cooling=100,
-        placement_rule="two end_stone coolers",
-        short_name="Pp",
-        block={"": core.components.MCBlock(name="qmd:accelerator_cooler1", data=12)}
     ),
     AcceleratorCooler(
         name="diamond",
@@ -253,13 +232,6 @@ DEFAULT_COMPONENTS: list[core.components.Component] = [
         block={"": core.components.MCBlock(name="qmd:accelerator_cooler1", data=15)}
     ),
     AcceleratorCooler(
-        name="tin",
-        cooling=120,
-        placement_rule="two lapis coolers",
-        short_name="Sn",
-        block={"": core.components.MCBlock(name="qmd:accelerator_cooler2", data=0)}
-    ),
-    AcceleratorCooler(
         name="lead",
         cooling=65,
         placement_rule="one iron cooler",
@@ -267,39 +239,11 @@ DEFAULT_COMPONENTS: list[core.components.Component] = [
         block={"": core.components.MCBlock(name="qmd:accelerator_cooler2", data=1)}
     ),
     AcceleratorCooler(
-        name="boron",
-        cooling=105,
-        placement_rule="one yoke && one cavity",
-        short_name="B ",
-        block={"": core.components.MCBlock(name="qmd:accelerator_cooler2", data=2)}
-    ),
-    AcceleratorCooler(
-        name="lithium",
-        cooling=125,
-        placement_rule="one boron cooler",
-        short_name="Li",
-        block={"": core.components.MCBlock(name="qmd:accelerator_cooler2", data=3)}
-    ),
-    AcceleratorCooler(
-        name="magnesium",
-        cooling=150,
-        placement_rule="one end_stone cooler && one prismarine cooler",
-        short_name="Mg",
-        block={"": core.components.MCBlock(name="qmd:accelerator_cooler2", data=4)}
-    ),
-    AcceleratorCooler(
         name="manganese",
         cooling=180,
         placement_rule="one gold cooler && one quartz cooler",
         short_name="Mn",
         block={"": core.components.MCBlock(name="qmd:accelerator_cooler2", data=5)}
-    ),
-    AcceleratorCooler(
-        name="aluminium",
-        cooling=175,
-        placement_rule="one tin cooler && one quartz cooler",
-        short_name="Al",
-        block={"": core.components.MCBlock(name="qmd:accelerator_cooler2", data=6)}
     ),
     AcceleratorCooler(
         name="silver",
@@ -316,52 +260,10 @@ DEFAULT_COMPONENTS: list[core.components.Component] = [
         block={"": core.components.MCBlock(name="qmd:accelerator_cooler2", data=8)}
     ),
     AcceleratorCooler(
-        name="villaumite",
-        cooling=170,
-        placement_rule="one purpur cooler && one prismarine cooler",
-        short_name="Vi",
-        block={"": core.components.MCBlock(name="qmd:accelerator_cooler2", data=9)}
-    ),
-    AcceleratorCooler(
-        name="carobbiite",
-        cooling=140,
-        placement_rule="one end_stone cooler && one gold cooler",
-        short_name="Cb",
-        block={"": core.components.MCBlock(name="qmd:accelerator_cooler2", data=10)}
-    ),
-    AcceleratorCooler(
         name="arsenic",
         cooling=145,
         placement_rule="two different cavity",
         short_name="As",
         block={"": core.components.MCBlock(name="qmd:accelerator_cooler2", data=11)}
-    ),
-    AcceleratorCooler(
-        name="nitrogen",
-        cooling=195,
-        placement_rule="one lapis cooler && one gold cooler",
-        short_name="N ",
-        block={"": core.components.MCBlock(name="qmd:accelerator_cooler2", data=12)}
-    ),
-    AcceleratorCooler(
-        name="helium",
-        cooling=200,
-        placement_rule="one boron cooler && one lapis cooler",
-        short_name="He",
-        block={"": core.components.MCBlock(name="qmd:accelerator_cooler2", data=13)}
-    ),
-    AcceleratorCooler(
-        name="enderium",
-        cooling=190,
-        placement_rule="three purpur coolers",
-        short_name="Ed",
-        block={"": core.components.MCBlock(name="qmd:accelerator_cooler2", data=14)}
-    ),
-    AcceleratorCooler(
-        name="cryotheum",
-        cooling=205,
-        placement_rule="three tin coolers",
-        short_name="Cr",
-        block={"": core.components.MCBlock(name="qmd:accelerator_cooler2", data=15)}
     )
 ]
