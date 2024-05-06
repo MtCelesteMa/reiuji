@@ -38,7 +38,8 @@ DEFAULT_COMPONENTS: list[core.components.Component] = [
         efficiency=0.5,
         heat=300,
         power=500,
-        short_name="\033[1mCu\033[0m",
+        short_name="Cu",
+        rich_formatting="b",
         block={"": core.components.MCBlock(name="qmd:accelerator_cavity", data=0)}
     ),
     RFCavity(
@@ -47,7 +48,8 @@ DEFAULT_COMPONENTS: list[core.components.Component] = [
         efficiency=0.8,
         heat=580,
         power=1000,
-        short_name="\033[1mMg\033[0m",
+        short_name="Mg",
+        rich_formatting="b",
         block={"": core.components.MCBlock(name="qmd:accelerator_cavity", data=1)}
     ),
     RFCavity(
@@ -56,7 +58,8 @@ DEFAULT_COMPONENTS: list[core.components.Component] = [
         efficiency=0.9,
         heat=1140,
         power=2000,
-        short_name="\033[1mNS\033[0m",
+        short_name="NS",
+        rich_formatting="b",
         block={"": core.components.MCBlock(name="qmd:accelerator_cavity", data=2)}
     ),
     RFCavity(
@@ -65,7 +68,8 @@ DEFAULT_COMPONENTS: list[core.components.Component] = [
         efficiency=0.95,
         heat=2260,
         power=4000,
-        short_name="\033[1mNT\033[0m",
+        short_name="NT",
+        rich_formatting="b",
         block={"": core.components.MCBlock(name="qmd:accelerator_cavity", data=3)}
     ),
     RFCavity(
@@ -74,7 +78,8 @@ DEFAULT_COMPONENTS: list[core.components.Component] = [
         efficiency=0.99,
         heat=4500,
         power=8000,
-        short_name="\033[1mBS\033[0m",
+        short_name="BS",
+        rich_formatting="b",
         block={"": core.components.MCBlock(name="qmd:accelerator_cavity", data=4)}
     ),
     AcceleratorMagnet(
@@ -83,7 +88,8 @@ DEFAULT_COMPONENTS: list[core.components.Component] = [
         efficiency=0.5,
         heat=300,
         power=1000,
-        short_name="\033[3mCu\033[0m",
+        short_name="Cu",
+        rich_formatting="i",
         block={"": core.components.MCBlock(name="qmd:accelerator_magnet", data=0)}
     ),
     AcceleratorMagnet(
@@ -92,7 +98,8 @@ DEFAULT_COMPONENTS: list[core.components.Component] = [
         efficiency=0.8,
         heat=580,
         power=2000,
-        short_name="\033[3mMg\033[0m",
+        short_name="Mg",
+        rich_formatting="i",
         block={"": core.components.MCBlock(name="qmd:accelerator_magnet", data=1)}
     ),
     AcceleratorMagnet(
@@ -101,7 +108,8 @@ DEFAULT_COMPONENTS: list[core.components.Component] = [
         efficiency=0.9,
         heat=1140,
         power=4000,
-        short_name="\033[3mNS\033[0m",
+        short_name="NS",
+        rich_formatting="i",
         block={"": core.components.MCBlock(name="qmd:accelerator_magnet", data=2)}
     ),
     AcceleratorMagnet(
@@ -110,7 +118,8 @@ DEFAULT_COMPONENTS: list[core.components.Component] = [
         efficiency=0.95,
         heat=2260,
         power=8000,
-        short_name="\033[3mNT\033[0m",
+        short_name="NT",
+        rich_formatting="i",
         block={"": core.components.MCBlock(name="qmd:accelerator_magnet", data=3)}
     ),
     AcceleratorMagnet(
@@ -119,7 +128,8 @@ DEFAULT_COMPONENTS: list[core.components.Component] = [
         efficiency=0.99,
         heat=4500,
         power=16000,
-        short_name="\033[3mBS\033[0m",
+        short_name="BS",
+        rich_formatting="i",
         block={"": core.components.MCBlock(name="qmd:accelerator_magnet", data=4)}
     ),
     AcceleratorCooler(
