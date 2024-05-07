@@ -5,7 +5,7 @@ Reiuji is named after [Utsuho Reiuji](https://en.touhouwiki.net/wiki/Utsuho_Reiu
 
 ## Installation
 
-Reiuji can be installed using pip via the following command
+Most users won't have to install Reiuji directly. But if you need to do so, it can be installed via pip using the command below:
 ```shell
 pip install "git+https://github.com/MtCelesteMa/reiuji.git"
 ```
@@ -22,4 +22,4 @@ pip install "git+https://github.com/MtCelesteMa/reiuji.git"
 
 ## Usage
 
-Refer to the `examples` folder for usage examples.
+Reiuji has a command line interface that can be found [here](https://github.com/MtCelesteMa/reiuji-cli).
