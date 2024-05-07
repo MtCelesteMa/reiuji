@@ -22,7 +22,7 @@ QMD_ACCELERATOR_COMPONENTS: list[types.Component] = [
         display=base.DisplayInfo(
             short_name="Cu",
             full_name="Copper RF Cavity",
-            rich_formatting="b"
+            bold=True
         ),
         block=base.MCBlock(name="qmd:accelerator_cavity", data=0)
     ),
@@ -35,7 +35,7 @@ QMD_ACCELERATOR_COMPONENTS: list[types.Component] = [
         display=base.DisplayInfo(
             short_name="Mg",
             full_name="Magnesium Diboride RF Cavity",
-            rich_formatting="b"
+            bold=True
         ),
         block=base.MCBlock(name="qmd:accelerator_cavity", data=1)
     ),
@@ -48,7 +48,7 @@ QMD_ACCELERATOR_COMPONENTS: list[types.Component] = [
         display=base.DisplayInfo(
             short_name="NS",
             full_name="Niobium-Tin RF Cavity",
-            rich_formatting="b"
+            bold=True
         ),
         block=base.MCBlock(name="qmd:accelerator_cavity", data=2)
     ),
@@ -61,7 +61,7 @@ QMD_ACCELERATOR_COMPONENTS: list[types.Component] = [
         display=base.DisplayInfo(
             short_name="NT",
             full_name="Niobium-Titanium RF Cavity",
-            rich_formatting="b"
+            bold=True
         ),
         block=base.MCBlock(name="qmd:accelerator_cavity", data=3)
     ),
@@ -74,7 +74,7 @@ QMD_ACCELERATOR_COMPONENTS: list[types.Component] = [
         display=base.DisplayInfo(
             short_name="BS",
             full_name="BSCCO RF Cavity",
-            rich_formatting="b"
+            bold=True
         ),
         block=base.MCBlock(name="qmd:accelerator_cavity", data=4)
     ),
@@ -87,7 +87,7 @@ QMD_ACCELERATOR_COMPONENTS: list[types.Component] = [
         display=base.DisplayInfo(
             short_name="Cu",
             full_name="Copper Electromagnet",
-            rich_formatting="i"
+            italic=True
         ),
         block=base.MCBlock(name="qmd:accelerator_magnet", data=0)
     ),
@@ -100,7 +100,7 @@ QMD_ACCELERATOR_COMPONENTS: list[types.Component] = [
         display=base.DisplayInfo(
             short_name="Mg",
             full_name="Magnesium Diboride Electromagnet",
-            rich_formatting="i"
+            italic=True
         ),
         block=base.MCBlock(name="qmd:accelerator_magnet", data=1)
     ),
@@ -113,7 +113,7 @@ QMD_ACCELERATOR_COMPONENTS: list[types.Component] = [
         display=base.DisplayInfo(
             short_name="NS",
             full_name="Niobium-Tin Electromagnet",
-            rich_formatting="i"
+            italic=True
         ),
         block=base.MCBlock(name="qmd:accelerator_magnet", data=2)
     ),
@@ -126,7 +126,7 @@ QMD_ACCELERATOR_COMPONENTS: list[types.Component] = [
         display=base.DisplayInfo(
             short_name="NT",
             full_name="Niobium-Titanium Electromagnet",
-            rich_formatting="i"
+            italic=True
         ),
         block=base.MCBlock(name="qmd:accelerator_magnet", data=3)
     ),
@@ -139,7 +139,7 @@ QMD_ACCELERATOR_COMPONENTS: list[types.Component] = [
         display=base.DisplayInfo(
             short_name="BS",
             full_name="BSCCO Electromagnet",
-            rich_formatting="i"
+            italic=True
         ),
         block=base.MCBlock(name="qmd:accelerator_magnet", data=4)
     ),

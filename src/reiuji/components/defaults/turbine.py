@@ -110,7 +110,7 @@ OVERHAULED_TURBINE_ROTOR_COMPONENTS_QMD: list[types.Component] = [
         expansion=1.8,
         display=base.DisplayInfo(
             short_name="Si",
-            full_name="SiC/SiC CMC Rotor Blade"
+            full_name="SiC-SiC CMC Rotor Blade"
         ),
         block=base.BlockInfoOrientation(
             x=base.MCBlock(name="nuclearcraft:turbine_rotor_blade_sic_sic_cmc", data=1),

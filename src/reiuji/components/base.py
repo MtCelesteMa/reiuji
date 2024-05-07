@@ -8,19 +8,11 @@ import pydantic
 class DisplayInfo(pydantic.BaseModel):
     short_name: str = pydantic.Field(default="  ", min_length=2, max_length=2)
     full_name: str = ""
-    rich_formatting: str | None = None
-
-    @property
-    def rich_short_name(self) -> str:
-        if isinstance(self.rich_formatting, str):
-            return f"[{self.rich_formatting}]{self.short_name}[/{self.rich_formatting}]"
-        return self.short_name
-
-    @property
-    def rich_full_name(self) -> str:
-        if isinstance(self.rich_formatting, str):
-            return f"[{self.rich_formatting}]{self.full_name}[/{self.rich_formatting}]"
-        return self.full_name
+    
+    bold: bool = False
+    italic: bool = False
+    color: tuple[int, int, int] | None = None
+    bg_color: tuple[int, int, int] | None = None
     
 
 class MCBlock(pydantic.BaseModel):

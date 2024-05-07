@@ -38,7 +38,7 @@ class DynamoBearing(base.BaseComponent):
     display: base.DisplayInfo = pydantic.Field(default_factory=lambda: base.DisplayInfo(
         short_name="0 ",
         full_name="Bearing",
-        rich_formatting="bright_black"
+        color=(128, 128, 128)
     ))
     block: base.MCBlock = pydantic.Field(default_factory=lambda: base.MCBlock(name="nuclearcraft:turbine_rotor_bearing"))
 
@@ -85,7 +85,7 @@ class BeamPipe(base.BaseComponent):
     display: base.DisplayInfo = pydantic.Field(default_factory=lambda: base.DisplayInfo(
         short_name="0 ",
         full_name="Beam Pipe",
-        rich_formatting="bright_black"
+        color=(128, 128, 128)
     ))
     block: base.MCBlock = pydantic.Field(default_factory=lambda: base.MCBlock(name="qmd:accelerator_beam"))
 
@@ -99,7 +99,7 @@ class AcceleratorYoke(base.BaseComponent):
     display: base.DisplayInfo = pydantic.Field(default_factory=lambda: base.DisplayInfo(
         short_name="Y ",
         full_name="Yoke",
-        rich_formatting="bright_black"
+        color=(128, 128, 128)
     ))
     block: base.MCBlock = pydantic.Field(default_factory=lambda: base.MCBlock(name="qmd:accelerator_yoke"))
 
@@ -152,7 +152,7 @@ class NucleosynthesisBeam(base.BaseComponent):
     display: base.DisplayInfo = pydantic.Field(default_factory=lambda: base.DisplayInfo(
         short_name="==",
         full_name="Nucleosynthesis Beam",
-        rich_formatting="bright_black"
+        color=(128, 128, 128)
     ))
     block: base.MCBlock = pydantic.Field(default_factory=lambda: base.MCBlock(name="qmd:vacuum_chamber_beam"))
 
@@ -169,7 +169,7 @@ class PlasmaGlass(base.BaseComponent):
     display: base.DisplayInfo = pydantic.Field(default_factory=lambda: base.DisplayInfo(
         short_name="[]",
         full_name="Plasma Glass",
-        rich_formatting="bright_black"
+        color=(128, 128, 128)
     ))
     block: base.MCBlock = pydantic.Field(default_factory=lambda: base.MCBlock(name="qmd:vacuum_chamber_plasma_glass"))
 
@@ -186,7 +186,7 @@ class PlasmaNozzle(base.BaseComponent):
     display: base.DisplayInfo = pydantic.Field(default_factory=lambda: base.DisplayInfo(
         short_name="<>",
         full_name="Plasma Nozzle",
-        rich_formatting="bright_black"
+        color=(128, 128, 128)
     ))
     block: base.BlockInfoOrientation = pydantic.Field(default_factory=lambda: base.BlockInfoOrientation(
         x=base.MCBlock(name="qmd:vacuum_chamber_plasma_nozzle", data=0),
