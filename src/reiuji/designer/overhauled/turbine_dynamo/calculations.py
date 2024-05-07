@@ -1,8 +1,8 @@
 """Calculations specific to NuclearCraft: Overhauled's turbine dynamo designer."""
 
 from .... import core
+from ....components.types import *
 from ... import base
-from . import models
 
 import uuid
 
@@ -11,12 +11,12 @@ from ortools.sat.python import cp_model
 
 class TurbineDynamoConductivity(base.calculations.Calculation):
     """Calculates the conductivity of a turbine dynamo configuration."""
-    def __call__(self, seq: core.multi_sequence.MultiSequence[core.components.Component]) -> float:
+    def __call__(self, seq: core.multi_sequence.MultiSequence[Component]) -> float:
         coil_count = 0
         bearing_count = 0
         total_conductivity = 0.0
         for component in seq:
-            if isinstance(component, models.DynamoCoil):
+            if isinstance(component, DynamoCoil):
                 coil_count += 1
                 total_conductivity += component.conductivity
             if component.type == "bearing":
@@ -29,7 +29,7 @@ class TurbineDynamoConductivity(base.calculations.Calculation):
             self,
             model: cp_model.CpModel,
             seq: core.multi_sequence.MultiSequence[cp_model.IntVar],
-            components: list[core.components.Component]
+            components: list[Component]
     ) -> cp_model.IntVar:
         type_to_id = dict()
         for i, component in enumerate(components):
@@ -37,7 +37,7 @@ class TurbineDynamoConductivity(base.calculations.Calculation):
                 type_to_id[component.type] =  [i]
             else:
                 type_to_id[component.type].append(i)
-        conductivities = [round(component.conductivity * base.scaled_calculations.SCALE_FACTOR) if isinstance(component, models.DynamoCoil) else 0 for component in components]
+        conductivities = [round(component.conductivity * base.scaled_calculations.SCALE_FACTOR) if isinstance(component, DynamoCoil) else 0 for component in components]
         
         is_coil = [model.NewBoolVar(str(uuid.uuid4())) for _ in seq]
         is_bearing = [model.NewBoolVar(str(uuid.uuid4())) for _ in seq]

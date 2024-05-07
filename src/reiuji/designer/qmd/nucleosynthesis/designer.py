@@ -1,8 +1,10 @@
 """Designer for QMD nucleosynthesis chambers."""
 
 from .... import core
+from ....components.types import *
+from ....components.defaults import QMD_NUCLEOSYNTHESIS_COMPONENTS
 from ... import base
-from . import models, constraints, calculations
+from . import constraints, calculations
 
 from ortools.sat.python import cp_model
 
@@ -14,10 +16,10 @@ class NucleosynthesisDesigner(base.designer.Designer):
             recipe_heat: int,
             x_symmetry: bool = False,
             z_symmetry: bool = False,
-            components: list[core.components.Component] | None = None,
+            components: list[Component] | None = None,
             component_limits: dict[str, tuple[int, int]] | None = None
     ) -> None:
-        super().__init__(components=components if not isinstance(components, type(None)) else models.DEFAULT_COMPONENTS)
+        super().__init__(components=components if not isinstance(components, type(None)) else QMD_NUCLEOSYNTHESIS_COMPONENTS)
         self.recipe_heat = recipe_heat
         self.x_symmetry = x_symmetry
         self.z_symmetry = z_symmetry

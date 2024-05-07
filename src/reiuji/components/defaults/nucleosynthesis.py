@@ -3,7 +3,7 @@
 from .. import base, types
 
 
-QMD_NUCLEOSYNTHESIS_COMPONENTS = [
+QMD_NUCLEOSYNTHESIS_COMPONENTS: list[types.Component] = [
     types.Air(),
     types.Casing(
         block=base.BlockInfoTransparency(

@@ -374,12 +374,12 @@ QMD_ACCELERATOR_COMPONENTS: list[types.Component] = [
         block=base.MCBlock(name="qmd:accelerator_cooler2", data=5)
     ),
     types.AcceleratorCooler(
-        name="aluminium",
+        name="aluminum",
         cooling=175,
         placement_rule="one tin cooler && one quartz cooler",
         display=base.DisplayInfo(
             short_name="Al",
-            full_name="Aluminium Accelerator Cooler"
+            full_name="Aluminum Accelerator Cooler"
         ),
         block=base.MCBlock(name="qmd:accelerator_cooler2", data=6)
     ),
@@ -487,7 +487,7 @@ for component in QMD_ACCELERATOR_COMPONENTS:
         "cooler:boron",
         "cooler:lithium",
         "cooler:magnesium",
-        "cooler:aluinium",
+        "cooler:aluminum",
         "cooler:villaumite",
         "cooler:carobbiite",
         "cooler:nitrogen",

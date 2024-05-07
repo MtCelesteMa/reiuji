@@ -1,6 +1,7 @@
 """Constraints specific to the QMD decelerator designer."""
 
 from .... import core
+from ....components.types import *
 from ... import base
 from .. import synchrotron
 
@@ -18,14 +19,14 @@ class EnergyConstraint(base.constraints.Constraint):
         self.radius = radius
         self.mass = mass
     
-    def is_satisfied(self, seq: core.multi_sequence.MultiSequence[core.components.Component]) -> bool:
+    def is_satisfied(self, seq: core.multi_sequence.MultiSequence[Component]) -> bool:
         raise NotImplementedError("EnergyConstraint.is_satisfied is not implemented.")
 
     def to_model(
         self,
         model: cp_model.CpModel,
         seq: core.multi_sequence.MultiSequence[cp_model.IntVar],
-        components: list[core.components.Component]
+        components: list[Component]
     ) -> None:
         dipole_energy = synchrotron.calculations.MaxDipoleEnergy(self.charge, self.radius, self.mass).to_model(model, seq, components)
         model.Add(dipole_energy >= self.minimum_energy)
@@ -34,14 +35,14 @@ class EnergyConstraint(base.constraints.Constraint):
 
 class OneCavityConstraint(base.constraints.Constraint):
     """Ensures that only one cavity is present in the structure."""
-    def is_satisfied(self, seq: core.multi_sequence.MultiSequence[core.components.Component]) -> bool:
+    def is_satisfied(self, seq: core.multi_sequence.MultiSequence[Component]) -> bool:
         raise NotImplementedError("EnergyConstraint.is_satisfied is not implemented.")
 
     def to_model(
         self,
         model: cp_model.CpModel,
         seq: core.multi_sequence.MultiSequence[cp_model.IntVar],
-        components: list[core.components.Component]
+        components: list[Component]
     ) -> None:
         type_to_id = dict()
         for i, component in enumerate(components):

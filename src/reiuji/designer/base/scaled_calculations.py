@@ -98,4 +98,4 @@ def sqrt(
         model.AddDivisionEquality(new_guess, s, 2)
         guess = new_guess
     
-    model.AddAbsEquality(target, new_guess)
+    model.AddAbsEquality(target, guess)

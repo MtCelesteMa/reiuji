@@ -1,10 +1,10 @@
 """Designer for QMD linear accelerators."""
 
 from .... import core
+from ....components.types import *
+from ....components.defaults import QMD_LINEAR_ACCELERATOR_COMPONENTS
 from ... import base
-from . import models, constraints, calculations
-
-import uuid
+from . import constraints, calculations
 
 from ortools.sat.python import cp_model
 
@@ -26,10 +26,10 @@ class LinearAcceleratorDesigner(base.designer.Designer):
             heat_neutral: bool = True,
             y_symmetry: bool = False,
             z_symmetry: bool = False,
-            components: list[core.components.Component] | None = None,
+            components: list[Component] | None = None,
             component_limits: dict[str, tuple[int, int]] | None = None
     ) -> None:
-        super().__init__(components=components if not isinstance(components, type(None)) else models.DEFAULT_COMPONENTS)
+        super().__init__(components=components if not isinstance(components, type(None)) else QMD_LINEAR_ACCELERATOR_COMPONENTS)
         self.length = length
         self.minimum_energy = minimum_energy
         self.maximum_energy = maximum_energy

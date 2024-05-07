@@ -1,8 +1,8 @@
 """Constraints specific to NuclearCraft: Overhauled's turbine dynamo designer."""
 
 from .... import core
+from ....components.types import *
 from ... import base
-from . import models
 
 from ortools.sat.python import cp_model
 
@@ -12,7 +12,7 @@ class CenteredBearingConstraint(base.constraints.Constraint):
     def __init__(self, shaft_width: int) -> None:
         self.shaft_width = shaft_width
     
-    def is_satisfied(self, seq: core.multi_sequence.MultiSequence[core.components.Component]) -> bool:
+    def is_satisfied(self, seq: core.multi_sequence.MultiSequence[Component]) -> bool:
         if len(seq.shape) != 2:
             raise ValueError("The sequence must be two-dimensional.")
         for i, component in enumerate(seq):
@@ -42,7 +42,7 @@ class CenteredBearingConstraint(base.constraints.Constraint):
         self,
         model: cp_model.CpModel,
         seq: core.multi_sequence.MultiSequence[cp_model.IntVar],
-        components: list[core.components.Component]
+        components: list[Component]
     ) -> None:
         type_to_id = dict()
         for i, component in enumerate(components):

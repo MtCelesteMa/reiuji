@@ -1,8 +1,8 @@
 """Calculations specific to NuclearCraft: Overhauled's turbine rotor designer."""
 
 from .... import core
+from ....components.types import *
 from ... import base
-from . import models
 
 import uuid
 
@@ -11,11 +11,11 @@ from ortools.sat.python import cp_model
 
 class TurbineRotorExpansion(base.calculations.SequenceCalculation):
     """Calculates the expansion of a turbine rotor configuration."""
-    def __call__(self, seq: core.multi_sequence.MultiSequence[core.components.Component]) -> list[float]:
+    def __call__(self, seq: core.multi_sequence.MultiSequence[Component]) -> list[float]:
         total_expansion_level = 1.0
         expansion_levels = []
         for component in seq:
-            if isinstance(component, (models.RotorBlade, models.RotorStator)):
+            if isinstance(component, (RotorBlade, RotorStator)):
                 expansion_levels.append(total_expansion_level * component.expansion ** (1 / 2))
                 total_expansion_level *= component.expansion
         return expansion_levels
@@ -24,10 +24,10 @@ class TurbineRotorExpansion(base.calculations.SequenceCalculation):
             self,
             model: cp_model.CpModel,
             seq: core.multi_sequence.MultiSequence[cp_model.IntVar],
-            components: list[core.components.Component]
+            components: list[Component]
     ) -> list[cp_model.IntVar]:
-        expansions = [round(component.expansion * base.scaled_calculations.SCALE_FACTOR) if isinstance(component, (models.RotorBlade, models.RotorStator)) else 1 * base.scaled_calculations.SCALE_FACTOR for component in components]
-        expansions_sqrt = [round(component.expansion ** (1 / 2) * base.scaled_calculations.SCALE_FACTOR) if isinstance(component, (models.RotorBlade, models.RotorStator)) else 1 * base.scaled_calculations.SCALE_FACTOR for component in components]
+        expansions = [round(component.expansion * base.scaled_calculations.SCALE_FACTOR) if isinstance(component, (RotorBlade, RotorStator)) else 1 * base.scaled_calculations.SCALE_FACTOR for component in components]
+        expansions_sqrt = [round(component.expansion ** (1 / 2) * base.scaled_calculations.SCALE_FACTOR) if isinstance(component, (RotorBlade, RotorStator)) else 1 * base.scaled_calculations.SCALE_FACTOR for component in components]
 
         expansion_levels = [model.NewIntVar(1, cp_model.INT32_MAX, str(uuid.uuid4())) for _ in seq]
         total_expansion_level = 1 * base.scaled_calculations.SCALE_FACTOR
@@ -49,13 +49,13 @@ class TurbineRotorEfficiency(base.calculations.Calculation):
     def __init__(self, optimal_expansion: float) -> None:
         self.optimal_expansion = optimal_expansion
     
-    def __call__(self, seq: core.multi_sequence.MultiSequence[core.components.Component]) -> float:
+    def __call__(self, seq: core.multi_sequence.MultiSequence[Component]) -> float:
         efficiency = 0.0
         n_blades = 0
         expansions = TurbineRotorExpansion()(seq)
         for i, component in enumerate(seq):
             ideal_expansion = self.optimal_expansion ** ((i + 0.5) / len(seq))
-            if isinstance(component, models.RotorBlade):
+            if isinstance(component, RotorBlade):
                 n_blades += 1
                 efficiency += component.efficiency * min(ideal_expansion / expansions[i], expansions[i] / ideal_expansion)
         return efficiency / n_blades
@@ -64,7 +64,7 @@ class TurbineRotorEfficiency(base.calculations.Calculation):
             self,
             model: cp_model.CpModel,
             seq: core.multi_sequence.MultiSequence[cp_model.IntVar],
-            components: list[core.components.Component]
+            components: list[Component]
     ) -> cp_model.IntVar:
         type_to_id = dict()
         for i, component in enumerate(components):
@@ -72,7 +72,7 @@ class TurbineRotorEfficiency(base.calculations.Calculation):
                 type_to_id[component.type] =  [i]
             else:
                 type_to_id[component.type].append(i)
-        efficiencies = [round(component.efficiency * base.scaled_calculations.SCALE_FACTOR) if isinstance(component, models.RotorBlade) else 0 for component in components]
+        efficiencies = [round(component.efficiency * base.scaled_calculations.SCALE_FACTOR) if isinstance(component, RotorBlade) else 0 for component in components]
         expansions = TurbineRotorExpansion().to_model(model, seq, components)
         
         is_blade = [model.NewBoolVar(str(uuid.uuid4())) for _ in seq]

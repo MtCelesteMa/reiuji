@@ -1,6 +1,7 @@
 """Base schematic writer class."""
 
 from ... import core
+from ... import components
 
 import itertools
 
@@ -8,10 +9,10 @@ from nbt import nbt
 
 
 class SchematicWriter:
-    def to_structure(self) -> core.multi_sequence.MultiSequence[core.components.MCBlock]:
+    def to_structure(self) -> core.multi_sequence.MultiSequence[components.base.MCBlock]:
         raise NotImplementedError
 
-    def to_nbt(self, structure: core.multi_sequence.MultiSequence[core.components.MCBlock]) -> nbt.NBTFile:
+    def to_nbt(self, structure: core.multi_sequence.MultiSequence[components.base.MCBlock]) -> nbt.NBTFile:
         y, z, x = structure.shape
         nbtfile = nbt.NBTFile()
         nbtfile.name = "Schematic"

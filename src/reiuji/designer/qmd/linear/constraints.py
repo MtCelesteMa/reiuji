@@ -1,8 +1,8 @@
 """Constraints specific to QMD's linear accelerator designer."""
 
 from .... import core
+from ....components.types import *
 from ... import base
-from . import models
 from . import calculations
 
 import uuid
@@ -13,7 +13,7 @@ from ortools.sat.python import cp_model
 
 class BeamConstraint(base.constraints.Constraint):
     """Ensures that the beam is at the center of the sequence. Note that the accelerator goes in the +x direction."""
-    def is_satisfied(self, seq: core.multi_sequence.MultiSequence[core.components.Component]) -> bool:
+    def is_satisfied(self, seq: core.multi_sequence.MultiSequence[Component]) -> bool:
         if seq.shape[1] != 5 or seq.shape[2] != 5:
             raise ValueError("BeamConstraint requires a Nx5x5 sequence.")
         for x in range(1, seq.shape[0] - 1):
@@ -29,7 +29,7 @@ class BeamConstraint(base.constraints.Constraint):
         self,
         model: cp_model.CpModel,
         seq: core.multi_sequence.MultiSequence[cp_model.IntVar],
-        components: list[core.components.Component]
+        components: list[Component]
     ) -> None:
         if seq.shape[1] != 5 or seq.shape[2] != 5:
             raise ValueError("BeamConstraint requires a Nx5x5 sequence.")
@@ -51,14 +51,14 @@ class BeamConstraint(base.constraints.Constraint):
 
 class CavityConstraint(base.constraints.Constraint):
     """Ensures that cavities are correctly placed."""
-    def is_satisfied(self, seq: core.multi_sequence.MultiSequence[core.components.Component]) -> bool:
+    def is_satisfied(self, seq: core.multi_sequence.MultiSequence[Component]) -> bool:
         raise NotImplementedError("CavityConstraint.is_satisfied is not implemented.")
     
     def to_model(
         self,
         model: cp_model.CpModel,
         seq: core.multi_sequence.MultiSequence[cp_model.IntVar],
-        components: list[core.components.Component]
+        components: list[Component]
     ) -> None:
         if seq.shape[1] != 5 or seq.shape[2] != 5:
             raise ValueError("CavityConstraint requires a Nx5x5 sequence.")
@@ -92,14 +92,14 @@ class CavityConstraint(base.constraints.Constraint):
 
 class MagnetConstraint(base.constraints.Constraint):
     """Ensures that magnets are correctly placed."""
-    def is_satisfied(self, seq: core.multi_sequence.MultiSequence[core.components.Component]) -> bool:
+    def is_satisfied(self, seq: core.multi_sequence.MultiSequence[Component]) -> bool:
         raise NotImplementedError("CavityConstraint.is_satisfied is not implemented.")
     
     def to_model(
         self,
         model: cp_model.CpModel,
         seq: core.multi_sequence.MultiSequence[cp_model.IntVar],
-        components: list[core.components.Component]
+        components: list[Component]
     ) -> None:
         if seq.shape[1] != 5 or seq.shape[2] != 5:
             raise ValueError("MagnetConstraint requires a Nx5x5 sequence.")
@@ -138,14 +138,14 @@ class HeatNeutralConstraint(base.constraints.Constraint):
     def __init__(self, external_heating: int) -> None:
         self.external_heating = external_heating
     
-    def is_satisfied(self, seq: core.multi_sequence.MultiSequence[core.components.Component]) -> bool:
+    def is_satisfied(self, seq: core.multi_sequence.MultiSequence[Component]) -> bool:
         raise NotImplementedError("HeatNeutralConstraint.is_satisfied is not implemented.")
     
     def to_model(
         self,
         model: cp_model.CpModel,
         seq: core.multi_sequence.MultiSequence[cp_model.IntVar],
-        components: list[core.components.Component]
+        components: list[Component]
     ) -> None:
         heating_rate = calculations.TotalHeatingRate().to_model(model, seq, components)
         cooling_rate = calculations.TotalCoolingRate().to_model(model, seq, components)
@@ -161,14 +161,14 @@ class BeamFocusConstraint(base.constraints.Constraint):
         self.scaling_factor = scaling_factor
         self.initial_focus = initial_focus
     
-    def is_satisfied(self, seq: core.multi_sequence.MultiSequence[core.components.Component]) -> bool:
+    def is_satisfied(self, seq: core.multi_sequence.MultiSequence[Component]) -> bool:
         raise NotImplementedError("BeamFocusConstraint.is_satisfied is not implemented.")
     
     def to_model(
         self,
         model: cp_model.CpModel,
         seq: core.multi_sequence.MultiSequence[cp_model.IntVar],
-        components: list[core.components.Component]
+        components: list[Component]
     ) -> None:
         target_focus = round(self.target_focus * base.scaled_calculations.SCALE_FACTOR)
         focus = calculations.BeamFocus(self.charge, self.beam_strength, self.scaling_factor, self.initial_focus).to_model(model, seq, components)
@@ -182,14 +182,14 @@ class EnergyConstraint(base.constraints.Constraint):
         self.maximum_energy = maximum_energy
         self.charge = charge
     
-    def is_satisfied(self, seq: core.multi_sequence.MultiSequence[core.components.Component]) -> bool:
+    def is_satisfied(self, seq: core.multi_sequence.MultiSequence[Component]) -> bool:
         raise NotImplementedError("EnergyConstraint.is_satisfied is not implemented.")
     
     def to_model(
         self,
         model: cp_model.CpModel,
         seq: core.multi_sequence.MultiSequence[cp_model.IntVar],
-        components: list[core.components.Component]
+        components: list[Component]
     ) -> None:
         charge = round(self.charge * 3)
         voltage = calculations.TotalVoltage().to_model(model, seq, components)

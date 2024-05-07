@@ -1,12 +1,13 @@
 """Base classes for representing calculations in Reiuji."""
 
 from ... import core
+from ...components.types import *
 
 from ortools.sat.python import cp_model
 
 
 class Calculation:
-    def __call__(self, seq: core.multi_sequence.MultiSequence[core.components.Component]) -> float:
+    def __call__(self, seq: core.multi_sequence.MultiSequence[Component]) -> float:
         """Calculate and return a float value based on the given sequence.
 
         Args:
@@ -21,7 +22,7 @@ class Calculation:
                 self,
                 model: cp_model.CpModel,
                 seq: core.multi_sequence.MultiSequence[cp_model.IntVar],
-                components: list[core.components.Component]
+                components: list[Component]
     ) -> cp_model.IntVar:
         """Applies the calculation to the given CP model.
 
@@ -37,7 +38,7 @@ class Calculation:
 
 
 class SequenceCalculation:
-    def __call__(self, seq: core.multi_sequence.MultiSequence[core.components.Component]) -> list[float]:
+    def __call__(self, seq: core.multi_sequence.MultiSequence[Component]) -> list[float]:
         """Calculate and return a float value based on the given sequence.
 
         Args:
@@ -52,7 +53,7 @@ class SequenceCalculation:
                 self,
                 model: cp_model.CpModel,
                 seq: core.multi_sequence.MultiSequence[cp_model.IntVar],
-                components: list[core.components.Component]
+                components: list[Component]
     ) -> list[cp_model.IntVar]:
         """Applies the calculation to the given CP model.
 

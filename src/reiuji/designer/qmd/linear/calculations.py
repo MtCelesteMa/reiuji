@@ -1,8 +1,8 @@
 """Calculations specific to QMD's linear accelerator designer."""
 
 from .... import core
+from ....components.types import *
 from ... import base
-from . import models
 
 import uuid
 
@@ -11,10 +11,10 @@ from ortools.sat.python import cp_model
 
 class TotalHeatingRate(base.calculations.Calculation):
     """Calculates the total heating rate of a linear accelerator configuration."""
-    def __call__(self, seq: core.multi_sequence.MultiSequence[core.components.Component]) -> float:
+    def __call__(self, seq: core.multi_sequence.MultiSequence[Component]) -> float:
         total_heating_rate = 0
         for x in range(seq.shape[0]):
-            if isinstance(seq[x, 1, 2], (models.RFCavity, models.AcceleratorMagnet)):
+            if isinstance(seq[x, 1, 2], (RFCavity, AcceleratorMagnet)):
                 total_heating_rate += seq[x, 1, 2].heat
         return total_heating_rate
     
@@ -22,7 +22,7 @@ class TotalHeatingRate(base.calculations.Calculation):
             self,
             model: cp_model.CpModel,
             seq: core.multi_sequence.MultiSequence[cp_model.IntVar],
-            components: list[core.components.Component]
+            components: list[Component]
     ) -> cp_model.IntVar:
         type_to_id = dict()
         for i, component in enumerate(components):
@@ -30,7 +30,7 @@ class TotalHeatingRate(base.calculations.Calculation):
                 type_to_id[component.type] = [i]
             else:
                 type_to_id[component.type].append(i)
-        heating_rates = [component.heat if isinstance(component, (models.RFCavity, models.AcceleratorMagnet)) else 0 for component in components]
+        heating_rates = [component.heat if isinstance(component, (RFCavity, AcceleratorMagnet)) else 0 for component in components]
 
         heat_contrib = [model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4())) for _ in range(seq.shape[0])]
         for x in range(seq.shape[0]):
@@ -43,10 +43,10 @@ class TotalHeatingRate(base.calculations.Calculation):
 
 class TotalCoolingRate(base.calculations.Calculation):
     """Calculates the total cooling rate of a linear accelerator configuration."""
-    def __call__(self, seq: core.multi_sequence.MultiSequence[core.components.Component]) -> float:
+    def __call__(self, seq: core.multi_sequence.MultiSequence[Component]) -> float:
         total_cooling_rate = 0
         for i, component in enumerate(seq):
-            if isinstance(component, models.AcceleratorCooler):
+            if isinstance(component, AcceleratorCooler):
                 total_cooling_rate += component.cooling
         return total_cooling_rate
 
@@ -54,7 +54,7 @@ class TotalCoolingRate(base.calculations.Calculation):
             self,
             model: cp_model.CpModel,
             seq: core.multi_sequence.MultiSequence[cp_model.IntVar],
-            components: list[core.components.Component]
+            components: list[Component]
     ) -> cp_model.IntVar:
         type_to_id = dict()
         for i, component in enumerate(components):
@@ -62,7 +62,7 @@ class TotalCoolingRate(base.calculations.Calculation):
                 type_to_id[component.type] = [i]
             else:
                 type_to_id[component.type].append(i)
-        cooling_rates = [component.cooling if isinstance(component, models.AcceleratorCooler) else 0 for component in components]
+        cooling_rates = [component.cooling if isinstance(component, AcceleratorCooler) else 0 for component in components]
 
         cool_contrib = [model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4())) for _ in seq]
         for i, component in enumerate(seq):
@@ -76,10 +76,10 @@ class TotalCoolingRate(base.calculations.Calculation):
 
 class TotalVoltage(base.calculations.Calculation):
     """Calculates the total voltage of a linear accelerator configuration."""
-    def __call__(self, seq: core.multi_sequence.MultiSequence[core.components.Component]) -> float:
+    def __call__(self, seq: core.multi_sequence.MultiSequence[Component]) -> float:
         total_voltage = 0
         for x in range(seq.shape[0]):
-            if isinstance(seq[x, 1, 2], models.RFCavity):
+            if isinstance(seq[x, 1, 2], RFCavity):
                 total_voltage += seq[x, 1, 2].voltage
         return total_voltage
     
@@ -87,7 +87,7 @@ class TotalVoltage(base.calculations.Calculation):
             self,
             model: cp_model.CpModel,
             seq: core.multi_sequence.MultiSequence[cp_model.IntVar],
-            components: list[core.components.Component]
+            components: list[Component]
     ) -> cp_model.IntVar:
         type_to_id = dict()
         for i, component in enumerate(components):
@@ -95,7 +95,7 @@ class TotalVoltage(base.calculations.Calculation):
                 type_to_id[component.type] = [i]
             else:
                 type_to_id[component.type].append(i)
-        voltages = [component.voltage if isinstance(component, models.RFCavity) else 0 for component in components]
+        voltages = [component.voltage if isinstance(component, RFCavity) else 0 for component in components]
 
         voltage_contrib = [model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4())) for _ in range(seq.shape[0])]
         for x in range(seq.shape[0]):
@@ -113,13 +113,13 @@ class BeamFocus(base.calculations.Calculation):
         self.scaling_factor = scaling_factor
         self.initial_focus = initial_focus
     
-    def __call__(self, seq: core.multi_sequence.MultiSequence[core.components.Component]) -> float:
+    def __call__(self, seq: core.multi_sequence.MultiSequence[Component]) -> float:
         focus_loss = 0.0
         focus_gain = 0.0
         for x in range(seq.shape[0]):
-            if isinstance(seq[x, 1, 2], models.AcceleratorMagnet):
+            if isinstance(seq[x, 1, 2], AcceleratorMagnet):
                 focus_gain += seq[x, 1, 2].strength * abs(self.charge)
-            if isinstance(seq[x, 2, 2], models.ParticleBeam):
+            if isinstance(seq[x, 2, 2], BeamPipe):
                 focus_loss += seq[x, 2, 2].attenuation * (1 + abs(self.charge) * (self.beam_strength / self.scaling_factor) ** (1 / 2))
         return self.initial_focus + focus_gain - focus_loss
     
@@ -127,7 +127,7 @@ class BeamFocus(base.calculations.Calculation):
             self,
             model: cp_model.CpModel,
             seq: core.multi_sequence.MultiSequence[cp_model.IntVar],
-            components: list[core.components.Component]
+            components: list[Component]
     ) -> cp_model.IntVar:
         type_to_id = dict()
         for i, component in enumerate(components):
@@ -135,8 +135,8 @@ class BeamFocus(base.calculations.Calculation):
                 type_to_id[component.type] = [i]
             else:
                 type_to_id[component.type].append(i)
-        strengths = [round(component.strength * base.scaled_calculations.SCALE_FACTOR) if isinstance(component, models.AcceleratorMagnet) else 0 for component in components]
-        attenuations = [round(component.attenuation * base.scaled_calculations.SCALE_FACTOR) if isinstance(component, models.ParticleBeam) else 0 for component in components]
+        strengths = [round(component.strength * base.scaled_calculations.SCALE_FACTOR) if isinstance(component, AcceleratorMagnet) else 0 for component in components]
+        attenuations = [round(component.attenuation * base.scaled_calculations.SCALE_FACTOR) if isinstance(component, BeamPipe) else 0 for component in components]
         charge = round(abs(self.charge) * base.scaled_calculations.SCALE_FACTOR)
         loss_factor = round((1 + abs(self.charge) * (self.beam_strength / self.scaling_factor) ** (1 / 2)) * base.scaled_calculations.SCALE_FACTOR)
 
@@ -163,12 +163,12 @@ class BeamFocus(base.calculations.Calculation):
 
 
 class PowerRequirement(base.calculations.Calculation):
-    def __call__(self, seq: core.multi_sequence.MultiSequence[core.components.Component]) -> float:
+    def __call__(self, seq: core.multi_sequence.MultiSequence[Component]) -> float:
         efficiency = 0.0
         parts = 0
         raw_power = 0
         for x in range(seq.shape[0]):
-            if isinstance(seq[x, 1, 2], (models.RFCavity, models.AcceleratorMagnet)):
+            if isinstance(seq[x, 1, 2], (RFCavity, AcceleratorMagnet)):
                 raw_power += seq[x, 1, 2].power
                 efficiency += seq[x, 1, 2].efficiency
                 parts += 1
@@ -178,7 +178,7 @@ class PowerRequirement(base.calculations.Calculation):
             self,
             model: cp_model.CpModel,
             seq: core.multi_sequence.MultiSequence[cp_model.IntVar],
-            components: list[core.components.Component]
+            components: list[Component]
     ) -> cp_model.IntVar:
         type_to_id = dict()
         for i, component in enumerate(components):
@@ -186,9 +186,9 @@ class PowerRequirement(base.calculations.Calculation):
                 type_to_id[component.type] = [i]
             else:
                 type_to_id[component.type].append(i)
-        powers = [component.power if isinstance(component, (models.RFCavity, models.AcceleratorMagnet)) else 0 for component in components]
-        efficiencies = [round(component.efficiency * base.scaled_calculations.SCALE_FACTOR) if isinstance(component, (models.RFCavity, models.AcceleratorMagnet)) else 0 for component in components]
-        is_part = [1 if isinstance(component, (models.RFCavity, models.AcceleratorMagnet)) else 0 for component in components]
+        powers = [component.power if isinstance(component, (RFCavity, AcceleratorMagnet)) else 0 for component in components]
+        efficiencies = [round(component.efficiency * base.scaled_calculations.SCALE_FACTOR) if isinstance(component, (RFCavity, AcceleratorMagnet)) else 0 for component in components]
+        is_part = [1 if isinstance(component, (RFCavity, AcceleratorMagnet)) else 0 for component in components]
 
         raw_power_contrib = [model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4())) for _ in range(seq.shape[0])]
         efficiency_contrib = [model.NewIntVar(0, cp_model.INT32_MAX, str(uuid.uuid4())) for _ in range(seq.shape[0])]

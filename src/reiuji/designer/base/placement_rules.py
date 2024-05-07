@@ -1,6 +1,7 @@
 """Placement rules for multiblock components."""
 
 from ... import core
+from ...components.types import *
 
 import uuid
 import typing
@@ -21,11 +22,11 @@ class PlacementRule:
         """
         raise NotImplementedError
 
-    def is_satisfied(self, neighbors: list[core.components.Component]) -> bool:
+    def is_satisfied(self, neighbors: list[Component]) -> bool:
         """Checks if the placement rule is satisfied by the given list of neighbors.
 
         Args:
-            neighbors (list[core.components.Component]): A list of neighboring components.
+            neighbors (list[Component]): A list of neighboring components.
 
         Returns:
             bool: True if the placement rule is satisfied, False otherwise.
@@ -36,14 +37,14 @@ class PlacementRule:
         self,
         model: cp_model.CpModel,
         neighbors: list[cp_model.IntVar],
-        components: list[core.components.Component]
+        components: list[Component]
     ) -> cp_model.IntVar:
         """Adds the placement rule to the CP model and returns whether it is satisfied as a variable.
 
         Args:
             model (cp_model.CpModel): The CP model to which the placement rule will be added.
             neighbors (list[cp_model.IntVar]): The list of neighbor variables.
-            components (list[core.components.Component]): The list of multiblock components.
+            components (list[Component]): The list of multiblock components.
 
         Returns:
             cp_model.IntVar: A variable representing whether the placement rule is satisfied.
@@ -56,14 +57,14 @@ class EmptyPlacementRule(PlacementRule):
     def to_dict(self) -> dict:
         return {}
     
-    def is_satisfied(self, neighbors: list[core.components.Component]) -> bool:
+    def is_satisfied(self, neighbors: list[Component]) -> bool:
         return True
     
     def to_model(
         self,
         model: cp_model.CpModel,
         neighbors: list[cp_model.IntVar],
-        components: list[core.components.Component]
+        components: list[Component]
     ) -> cp_model.IntVar:
         return model.NewBoolVar(str(uuid.uuid4()))
 
@@ -94,7 +95,7 @@ class NamePlacementRule(PlacementRule):
             "axial": self.axial
         }
     
-    def is_satisfied(self, neighbors: list[core.components.Component]) -> bool:
+    def is_satisfied(self, neighbors: list[Component]) -> bool:
         count = 0
         for neighbor in neighbors:
             if neighbor.name == self.name and neighbor.type == self.type:
@@ -112,7 +113,7 @@ class NamePlacementRule(PlacementRule):
         self,
         model: cp_model.CpModel,
         neighbors: list[cp_model.IntVar],
-        components: list[core.components.Component]
+        components: list[Component]
     ) -> cp_model.IntVar:
         name_to_id = dict()
         for i, component in enumerate(components):
@@ -190,7 +191,7 @@ class TypePlacementRule(PlacementRule):
             "different": self.different
         }
     
-    def is_satisfied(self, neighbors: list[core.components.Component]) -> bool:
+    def is_satisfied(self, neighbors: list[Component]) -> bool:
         count = 0
         for neighbor in neighbors:
             if neighbor.type == self.type:
@@ -212,7 +213,7 @@ class TypePlacementRule(PlacementRule):
         self,
         model: cp_model.CpModel,
         neighbors: list[cp_model.IntVar],
-        components: list[core.components.Component]
+        components: list[Component]
     ) -> cp_model.IntVar:
         type_to_id = dict()
         for i, component in enumerate(components):
@@ -290,7 +291,7 @@ class CompoundPlacementRule(PlacementRule):
             "mode": self.mode
         }
     
-    def is_satisfied(self, neighbors: list[core.components.Component]) -> bool:
+    def is_satisfied(self, neighbors: list[Component]) -> bool:
         satisfied = [rule.is_satisfied(neighbors) for rule in self.rules]
         if self.mode == "AND":
             return all(satisfied)
@@ -300,7 +301,7 @@ class CompoundPlacementRule(PlacementRule):
         self,
         model: cp_model.CpModel,
         neighbors: list[cp_model.IntVar],
-        components: list[core.components.Component]
+        components: list[Component]
     ) -> cp_model.IntVar:
         satisfied = model.NewBoolVar(str(uuid.uuid4()))
         rule_satisfied = [rule.to_model(model, neighbors, components) for rule in self.rules]

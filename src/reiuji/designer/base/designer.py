@@ -1,6 +1,8 @@
 """Base class for multiblock designers."""
 
 from ... import core
+from ...components.types import *
+
 
 import uuid
 import math
@@ -11,7 +13,7 @@ from ortools.sat import cp_model_pb2
 
 class Designer:
     """Base class for multiblock designers."""
-    def __init__(self, *, components: list[core.components.Component]) -> None:
+    def __init__(self, *, components: list[Component]) -> None:
         self.components = components
     
     @property
@@ -32,7 +34,7 @@ class Designer:
         """
         raise NotImplementedError
     
-    def design(self, *, timeout: float | None = None) -> tuple[cp_model_pb2.CpSolverStatus, core.multi_sequence.MultiSequence[core.components.Component] | None]:
+    def design(self, *, timeout: float | None = None) -> tuple[cp_model_pb2.CpSolverStatus, core.multi_sequence.MultiSequence[Component] | None]:
         """Design a multiblock structure.
 
         Returns:

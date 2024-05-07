@@ -1,11 +1,11 @@
 """Designer for QMD decelerators."""
 
 from .... import core
+from ....components.types import *
+from ....components.defaults import QMD_ACCELERATOR_COMPONENTS
 from ... import base
 from .. import synchrotron
 from . import constraints
-
-import uuid
 
 from ortools.sat.python import cp_model
 
@@ -27,10 +27,10 @@ class DeceleratorDesigner(base.designer.Designer):
             initial_focus: float = 0.0,
             heat_neutral: bool = True,
             internal_symmetry: bool = False,
-            components: list[core.components.Component] | None = None,
+            components: list[Component] | None = None,
             component_limits: dict[str, tuple[int, int]] | None = None
     ) -> None:
-        super().__init__(components=components if not isinstance(components, type(None)) else synchrotron.models.DEFAULT_COMPONENTS)
+        super().__init__(components=components if not isinstance(components, type(None)) else QMD_ACCELERATOR_COMPONENTS)
         self.side_length = side_length
         self.minimum_energy = minimum_energy
         self.maximum_energy = maximum_energy

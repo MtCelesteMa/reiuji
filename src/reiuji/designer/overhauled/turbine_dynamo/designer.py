@@ -1,8 +1,10 @@
 """Designer for NuclearCraft: Overhauled turbine dynamos."""
 
 from .... import core
+from ....components.types import *
+from ....components.defaults import OVERHAULED_TURBINE_DYNAMO_COMPONENTS
 from ... import base
-from . import models, constraints, calculations
+from . import constraints, calculations
 
 from ortools.sat.python import cp_model
 
@@ -15,10 +17,10 @@ class TurbineDynamoDesigner(base.designer.Designer):
             shaft_width: int = 1,
             x_symmetry: bool = False,
             y_symmetry: bool = False,
-            components: list[core.components.Component] | None = None,
+            components: list[Component] | None = None,
             component_limits: dict[str, tuple[int, int]] | None = None
     ) -> None:
-        super().__init__(components=components if not isinstance(components, type(None)) else models.DEFAULT_COMPONENTS)
+        super().__init__(components=components if not isinstance(components, type(None)) else OVERHAULED_TURBINE_DYNAMO_COMPONENTS)
         self.side_length = side_length
         self.shaft_width = shaft_width
         self.x_symmetry = x_symmetry

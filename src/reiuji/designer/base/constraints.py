@@ -1,6 +1,7 @@
 """Constraints for designing multiblocks."""
 
 from ... import core
+from ...components.types import *
 
 from . import placement_rules
 
@@ -11,7 +12,7 @@ from ortools.sat.python import cp_model
 
 class Constraint:
     """Represents a constraint that can be applied to a multiblock sequence."""
-    def is_satisfied(self, seq: core.multi_sequence.MultiSequence[core.components.Component]) -> bool:
+    def is_satisfied(self, seq: core.multi_sequence.MultiSequence[Component]) -> bool:
         """Checks if the given sequence satisfies the constraint.
 
         Args:
@@ -26,7 +27,7 @@ class Constraint:
         self,
         model: cp_model.CpModel,
         seq: core.multi_sequence.MultiSequence[cp_model.IntVar],
-        components: list[core.components.Component]
+        components: list[Component]
     ) -> None:
         """Adds the constraint to the given model.
 
@@ -43,7 +44,7 @@ class Constraint:
 
 class CasingConstraint(Constraint):
     """Ensures that casing blocks are placed at the exterior of the sequence."""
-    def is_satisfied(self, seq: core.multi_sequence.MultiSequence[core.components.Component]) -> bool:
+    def is_satisfied(self, seq: core.multi_sequence.MultiSequence[Component]) -> bool:
         for i, component in enumerate(seq):
             idx = seq.index_int_to_tuple(i)
             if any([idx_ == 0 for idx_, dim in zip(idx, seq.shape)]) or any([idx_ == dim - 1 for idx_, dim in zip(idx, seq.shape)]):
@@ -58,7 +59,7 @@ class CasingConstraint(Constraint):
         self,
         model: cp_model.CpModel,
         seq: core.multi_sequence.MultiSequence[cp_model.IntVar],
-        components: list[core.components.Component]
+        components: list[Component]
     ) -> None:
         type_to_id = dict()
         for i, component in enumerate(components):
@@ -76,7 +77,7 @@ class CasingConstraint(Constraint):
 
 class PlacementRuleConstraint(Constraint):
     """Ensures that all placement rules are satisfied."""
-    def is_satisfied(self, seq: core.multi_sequence.MultiSequence[core.components.Component]) -> bool:
+    def is_satisfied(self, seq: core.multi_sequence.MultiSequence[Component]) -> bool:
         for i, component in enumerate(seq):
             idx = seq.index_int_to_tuple(i)
             neighbors = []
@@ -95,7 +96,7 @@ class PlacementRuleConstraint(Constraint):
         self,
         model: cp_model.CpModel,
         seq: core.multi_sequence.MultiSequence[cp_model.IntVar],
-        components: list[core.components.Component]
+        components: list[Component]
     ) -> None:
         rules = [placement_rules.parse_rule_string(component.placement_rule) for component in components]
         for i, component in enumerate(seq):
@@ -116,7 +117,7 @@ class SymmetryConstraint(Constraint):
     def __init__(self, axis: int) -> None:
         self.axis = axis
 
-    def is_satisfied(self, seq: core.multi_sequence.MultiSequence[core.components.Component]) -> bool:
+    def is_satisfied(self, seq: core.multi_sequence.MultiSequence[Component]) -> bool:
         for i, component in enumerate(seq):
             idx = seq.index_int_to_tuple(i)
             mirror_idx = (idx[:self.axis] + (seq.shape[self.axis] - 1 - idx[self.axis],) + idx[self.axis + 1:])
@@ -128,7 +129,7 @@ class SymmetryConstraint(Constraint):
         self,
         model: cp_model.CpModel,
         seq: core.multi_sequence.MultiSequence[cp_model.IntVar],
-        components: list[core.components.Component]
+        components: list[Component]
     ) -> None:
         for i, component in enumerate(seq):
             idx = seq.index_int_to_tuple(i)
@@ -143,14 +144,14 @@ class QuantityConstraint(Constraint):
         self.max_quantity = max_quantity
         self.min_quantity = min_quantity
     
-    def is_satisfied(self, seq: core.multi_sequence.MultiSequence[core.components.Component]) -> bool:
+    def is_satisfied(self, seq: core.multi_sequence.MultiSequence[Component]) -> bool:
         return sum([1 for component in seq if component.full_name == self.component_full_name]) <= self.max_quantity
     
     def to_model(
         self,
         model: cp_model.CpModel,
         seq: core.multi_sequence.MultiSequence[cp_model.IntVar],
-        components: list[core.components.Component]
+        components: list[Component]
     ) -> None:
         component_id = [component.full_name for component in components].index(self.component_full_name)
         is_equal = [model.NewBoolVar(str(uuid.uuid4())) for _ in seq]

@@ -1,8 +1,10 @@
 """Designer for NuclearCraft: Overhauled turbine rotors."""
 
 from .... import core
+from ....components.types import *
+from ....components.defaults import OVERHAULED_TURBINE_ROTOR_COMPONENTS
 from ... import base
-from . import models, calculations
+from . import calculations
 
 from ortools.sat.python import cp_model
 
@@ -13,10 +15,10 @@ class TurbineRotorDesigner(base.designer.Designer):
             length: int,
             optimal_expansion: float,
             *,
-            components: list[core.components.Component] | None = None,
+            components: list[Component] | None = None,
             component_limits: dict[str, tuple[int, int]] | None = None
     ) -> None:
-        super().__init__(components=components if not isinstance(components, type(None)) else models.DEFAULT_COMPONENTS)
+        super().__init__(components=components if not isinstance(components, type(None)) else OVERHAULED_TURBINE_ROTOR_COMPONENTS)
         self.length = length
         self.optimal_expansion = optimal_expansion
         self.component_limits = component_limits if not isinstance(component_limits, type(None)) else dict()
