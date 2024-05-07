@@ -3,7 +3,6 @@
 from .... import core
 from ....components.types import *
 from ... import base
-from . import models
 
 import uuid
 

@@ -4,7 +4,7 @@ from .... import core
 from ....components.types import *
 from ....components.defaults import QMD_ACCELERATOR_COMPONENTS
 from ... import base
-from . import models, constraints, calculations
+from . import constraints, calculations
 
 from ortools.sat.python import cp_model
 
