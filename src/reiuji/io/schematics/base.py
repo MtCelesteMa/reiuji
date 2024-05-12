@@ -4,6 +4,7 @@ from ... import core
 from ... import components
 
 import itertools
+import pathlib
 
 from nbt import nbt
 
@@ -67,7 +68,7 @@ class SchematicWriter:
 
         return nbtfile
     
-    def write(self, output: str) -> None:
+    def write(self, output: pathlib.Path | str) -> None:
         structure = self.to_structure()
         nbtfile = self.to_nbt(structure)
         nbtfile.write_file(output)
