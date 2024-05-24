@@ -5,9 +5,9 @@ Reiuji is named after [Utsuho Reiuji](https://en.touhouwiki.net/wiki/Utsuho_Reiu
 
 ## Installation
 
-Most users won't have to install Reiuji directly. But if you need to do so, it can be installed via pip using the command below:
+Most users won't have to install Reiuji directly (see Usage below for more information). But if you need to do so, it can be installed via pip using the command below:
 ```shell
-pip install "git+https://github.com/MtCelesteMa/reiuji.git"
+pip install reiuji-nuclearcraft
 ```
 
 ## Features
