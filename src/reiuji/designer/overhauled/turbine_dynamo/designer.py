@@ -18,7 +18,7 @@ class TurbineDynamoDesigner(base.designer.Designer):
             x_symmetry: bool = False,
             y_symmetry: bool = False,
             components: list[Component] | None = None,
-            component_limits: dict[str, tuple[int, int]] | None = None
+            component_limits: dict[str, tuple[int | None, int | None]] | None = None
     ) -> None:
         super().__init__(components=components if not isinstance(components, type(None)) else OVERHAULED_TURBINE_DYNAMO_COMPONENTS)
         self.side_length = side_length

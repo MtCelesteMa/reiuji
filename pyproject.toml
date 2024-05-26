@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "reiuji_nuclearcraft"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
     "pydantic",
     "ortools",
@@ -33,4 +33,5 @@ namespaces = false
 
 [project.urls]
 Homepage = "https://github.com/MtCelesteMa/reiuji"
+Repository = "https://github.com/MtCelesteMa/reiuji"
 "Bug Tracker" = "https://github.com/MtCelesteMa/reiuji/issues"

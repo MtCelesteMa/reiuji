@@ -23,3 +23,5 @@ pip install reiuji-nuclearcraft
 ## Usage
 
 Reiuji has a command line interface that can be found [here](https://github.com/MtCelesteMa/reiuji-cli).
+
+There is also a web app in the works.

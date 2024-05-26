@@ -17,7 +17,7 @@ class NucleosynthesisDesigner(base.designer.Designer):
             x_symmetry: bool = False,
             z_symmetry: bool = False,
             components: list[Component] | None = None,
-            component_limits: dict[str, tuple[int, int]] | None = None
+            component_limits: dict[str, tuple[int | None, int | None]] | None = None
     ) -> None:
         super().__init__(components=components if not isinstance(components, type(None)) else QMD_NUCLEOSYNTHESIS_COMPONENTS)
         self.recipe_heat = recipe_heat

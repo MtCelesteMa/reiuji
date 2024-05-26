@@ -139,13 +139,16 @@ class SymmetryConstraint(Constraint):
 
 class QuantityConstraint(Constraint):
     """Limits the number of a specific component type in the sequence."""
-    def __init__(self, component_full_name: str, max_quantity: int, min_quantity: int = 0) -> None:
+    def __init__(self, component_full_name: str, max_quantity: int | None = None, min_quantity: int | None = None) -> None:
         self.component_full_name = component_full_name
         self.max_quantity = max_quantity
-        self.min_quantity = min_quantity
+        self.min_quantity = min_quantity if isinstance(min_quantity, int) else 0
     
     def is_satisfied(self, seq: core.multi_sequence.MultiSequence[Component]) -> bool:
-        return sum([1 for component in seq if component.full_name == self.component_full_name]) <= self.max_quantity
+        count = sum([1 for component in seq if component.full_name == self.component_full_name])
+        if count < self.min_quantity or (isinstance(self.max_quantity, int) and count > self.max_quantity):
+            return False
+        return True
     
     def to_model(
         self,
@@ -159,4 +162,5 @@ class QuantityConstraint(Constraint):
             model.Add(component == component_id).OnlyEnforceIf(is_equal[i])
             model.Add(component != component_id).OnlyEnforceIf(is_equal[i].Not())
         model.Add(sum(is_equal) >= self.min_quantity)
-        model.Add(sum(is_equal) <= self.max_quantity)
+        if isinstance(self.max_quantity, int):
+            model.Add(sum(is_equal) <= self.max_quantity)

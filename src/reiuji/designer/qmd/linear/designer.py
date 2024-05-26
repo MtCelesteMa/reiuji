@@ -27,7 +27,7 @@ class LinearAcceleratorDesigner(base.designer.Designer):
             y_symmetry: bool = False,
             z_symmetry: bool = False,
             components: list[Component] | None = None,
-            component_limits: dict[str, tuple[int, int]] | None = None
+            component_limits: dict[str, tuple[int | None, int | None]] | None = None
     ) -> None:
         super().__init__(components=components if not isinstance(components, type(None)) else QMD_LINEAR_ACCELERATOR_COMPONENTS)
         self.length = length

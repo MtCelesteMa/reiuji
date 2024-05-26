@@ -16,7 +16,7 @@ class TurbineRotorDesigner(base.designer.Designer):
             optimal_expansion: float,
             *,
             components: list[Component] | None = None,
-            component_limits: dict[str, tuple[int, int]] | None = None
+            component_limits: dict[str, tuple[int | None, int | None]] | None = None
     ) -> None:
         super().__init__(components=components if not isinstance(components, type(None)) else OVERHAULED_TURBINE_ROTOR_COMPONENTS)
         self.length = length
