@@ -1,7 +1,7 @@
 """Tests for the MultiSequence class."""
 
 import pytest
-from reiuji.designer.core.multi_sequence import MultiSequence
+from reiuji.core.utils.multi_sequence import MultiSequence
 
 
 @pytest.fixture

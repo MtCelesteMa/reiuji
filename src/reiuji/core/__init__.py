@@ -1,3 +1,6 @@
 """Core module of Reiuji."""
 
-from . import multi_sequence
+from . import utils
+from . import data
+
+REGISTRY = data.registry.REGISTRY
