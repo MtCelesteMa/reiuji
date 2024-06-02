@@ -2,3 +2,4 @@
 
 from . import multi_sequence
 from . import cp_utils
+from . import registered_model
