@@ -4,32 +4,21 @@ import typing
 from collections import abc
 import math
 
+import pydantic
 
-class MultiSequence[E](abc.Sequence[E], abc.Iterable[E]):
-    """A class representing a multi-dimensional sequence.
 
-    This class combines the functionality of both `abc.Sequence` and `abc.Iterable` to provide
-    a multi-dimensional sequence object.
+class MultiSequence[E](pydantic.BaseModel, abc.Sequence[E]):
+    model_config = pydantic.ConfigDict(arbitrary_types_allowed=True)
 
-    Attributes:
-        seq (abc.Sequence[E]): The input sequence.
-        shape (tuple[int, ...]): The desired shape of the MultiSequence.
-    """
-    def __init__(self, seq: abc.Sequence[E], shape: tuple[int, ...]) -> None:
-        """Initializes a MultiSequence object.
+    seq: list[E]
+    shape: tuple[int, ...]
 
-        Args:
-            seq (abc.Sequence[E]): The input sequence.
-            shape (tuple[int, ...]): The desired shape of the MultiSequence.
+    @pydantic.model_validator(mode="after")
+    def check_shape(self) -> typing.Self:
+        if len(self.seq) != math.prod(self.shape):
+            raise ValueError("Shape and sequence length mismatch.")
+        return self
 
-        Raises:
-            ValueError: If the shape does not match the length of the sequence.
-        """
-        self.seq = seq
-        self.shape = shape
-        if math.prod(shape) != len(seq):
-            raise ValueError("Shape does not match sequence length")
-    
     def __len__(self) -> int:
         return len(self.seq)
     
@@ -57,14 +46,41 @@ class MultiSequence[E](abc.Sequence[E], abc.Iterable[E]):
 
     @typing.overload
     def __getitem__(self, index: int) -> E:
+        """
+        Get the element at the specified index in the multi-sequence.
+
+        Args:
+            index (int): The index of the element to retrieve.
+
+        Returns:
+            E: The element at the specified index.
+        """
         ...
     
     @typing.overload
     def __getitem__(self, index: slice) -> abc.Sequence[E]:
+        """
+        Get a sequence of elements from the multi-sequence based on the given slice.
+
+        Args:
+            index (slice): The slice object specifying the range of indices to retrieve.
+
+        Returns:
+            abc.Sequence[E]: A sequence of elements from the multi-sequence.
+        """
         ...
 
     @typing.overload
     def __getitem__(self, index: tuple[int, ...]) -> E:
+        """
+        Get the element at the specified index in the multi-sequence.
+
+        Args:
+            index (tuple[int, ...]): The index of the element to retrieve.
+
+        Returns:
+            E: The element at the specified index.
+        """
         ...
 
     def __getitem__(self, index: int | slice | tuple[int, ...]) -> E | abc.Sequence[E]:
@@ -75,7 +91,25 @@ class MultiSequence[E](abc.Sequence[E], abc.Iterable[E]):
         else:
             raise TypeError("Invalid index type")
     
-    def __iter__(self) -> abc.Iterator[E]:
+    def __setitem__(self, index: int, value: E) -> None:
+        """
+        Set the value at the specified index in the multi-sequence.
+
+        Args:
+            index (int): The index of the element to set.
+            value (E): The value to set at the specified index.
+
+        Returns:
+            None: This function does not return anything.
+        """
+        self.seq[index] = value
+    
+    def iter(self) -> abc.Iterator[E]:
+        """Returns an iterator over the elements of the multi-sequence.
+
+        Returns:
+            abc.Iterator[E]: An iterator over the elements of the multi-sequence.
+        """
         return iter(self.seq)
     
     def neighbors(self, index: int | tuple[int, ...], axis: int) -> tuple[E | None, E | None]:

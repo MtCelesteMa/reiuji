@@ -1,12 +1,28 @@
 """Tests for the MultiSequence class."""
 
 import pytest
+import pydantic
 from reiuji.core.utils.multi_sequence import MultiSequence
 
 
 @pytest.fixture
+def multi_sequence_dict() -> dict:
+    return {"seq": [i for i in range(24)], "shape": (2, 3, 4)}
+
+
+@pytest.fixture
 def multi_sequence() -> MultiSequence[int]:
-    return MultiSequence(range(24), (2, 3, 4))
+    return MultiSequence(seq=[i for i in range(24)], shape=(2, 3, 4))
+
+
+def test_wrong_shape() -> None:
+    with pytest.raises(pydantic.ValidationError):
+        MultiSequence(seq=[i for i in range(24)], shape=(2, 3, 4, 5))
+
+
+def test_validation_and_serialization(multi_sequence_dict: dict, multi_sequence: MultiSequence[int]) -> None:
+    assert MultiSequence.model_validate(multi_sequence_dict) == multi_sequence
+    assert MultiSequence.model_dump(multi_sequence) == multi_sequence_dict
 
 
 def test_len(multi_sequence: MultiSequence[int]) -> None:
