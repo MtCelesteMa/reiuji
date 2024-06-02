@@ -46,8 +46,7 @@ class MultiSequence[E](pydantic.BaseModel, abc.Sequence[E]):
 
     @typing.overload
     def __getitem__(self, index: int) -> E:
-        """
-        Get the element at the specified index in the multi-sequence.
+        """Get the element at the specified index in the multi-sequence.
 
         Args:
             index (int): The index of the element to retrieve.
@@ -59,8 +58,7 @@ class MultiSequence[E](pydantic.BaseModel, abc.Sequence[E]):
     
     @typing.overload
     def __getitem__(self, index: slice) -> abc.Sequence[E]:
-        """
-        Get a sequence of elements from the multi-sequence based on the given slice.
+        """Get a sequence of elements from the multi-sequence based on the given slice.
 
         Args:
             index (slice): The slice object specifying the range of indices to retrieve.
@@ -72,8 +70,7 @@ class MultiSequence[E](pydantic.BaseModel, abc.Sequence[E]):
 
     @typing.overload
     def __getitem__(self, index: tuple[int, ...]) -> E:
-        """
-        Get the element at the specified index in the multi-sequence.
+        """Get the element at the specified index in the multi-sequence.
 
         Args:
             index (tuple[int, ...]): The index of the element to retrieve.
@@ -92,8 +89,7 @@ class MultiSequence[E](pydantic.BaseModel, abc.Sequence[E]):
             raise TypeError("Invalid index type")
     
     def __setitem__(self, index: int, value: E) -> None:
-        """
-        Set the value at the specified index in the multi-sequence.
+        """Set the value at the specified index in the multi-sequence.
 
         Args:
             index (int): The index of the element to set.

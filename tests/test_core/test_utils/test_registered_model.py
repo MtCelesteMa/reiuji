@@ -11,6 +11,7 @@ def parts_dict() -> list[dict]:
     return [
         {"reg_key": "test.part_a", "name": "a", "conductivity": 1.0},
         {"reg_key": "test.part_b", "name": "b", "cooling": 10},
+        {"reg_key": "test.part_c", "name": "c", "cooling": 20, "flag": True},
     ]
 
 
@@ -19,6 +20,7 @@ def parts() -> list[rt.BasePart]:
     return [
         rt.PartA(name="a", conductivity=1.0),
         rt.PartB(name="b", cooling=10),
+        rt.PartC(name="c", cooling=20, flag=True),
     ]
 
 
@@ -39,7 +41,7 @@ def rules() -> list[rt.BaseRule]:
 
 
 def test_registry() -> None:
-    assert set(rt.BasePart.registry) == {"test.part_a", "test.part_b"}
+    assert set(rt.BasePart.registry) == {"test.part_a", "test.part_b", "test.part_c"}
     assert set(rt.BaseRule.registry) == {"test.rule_a", "test.rule_b"}
 
 
@@ -47,6 +49,7 @@ def test_keys() -> None:
     assert not hasattr(rt.BasePart, "reg_key")
     assert rt.PartA.reg_key == "test.part_a"
     assert rt.PartB.reg_key == "test.part_b"
+    assert rt.PartC.reg_key == "test.part_c"
     assert not hasattr(rt.BaseRule, "reg_key")
     assert not hasattr(rt.Rule0, "reg_key")
     assert rt.RuleA.reg_key == "test.rule_a"

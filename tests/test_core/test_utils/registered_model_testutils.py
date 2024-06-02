@@ -22,6 +22,11 @@ class PartB(BasePart, reg_key="test.part_b"):
     cooling: int
 
 
+class PartC(PartB, reg_key="test.part_c"):
+    name: str = "c"
+    flag: bool
+
+
 Part = typing.Annotated[
     BasePart,
     PlainValidator(registered_model.model_validate(BasePart)),
