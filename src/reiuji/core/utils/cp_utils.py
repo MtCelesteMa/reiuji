@@ -118,3 +118,34 @@ def s_sqrt(
         model.add_division_equality(new_guess, s, 2)
         guess = new_guess
     model.add_abs_equality(target, guess)
+
+
+# Other
+
+def add_element_2d(model: cp_model.CpModel, indexes: tuple[cp_model.IntVar, cp_model.IntVar], variables: list[list[int | cp_model.IntVar]], target: cp_model.IntVar) -> None:
+    """Adds constraints to a given CP-SAT model to enforce that a target variable matches the value selected from a 2D list (list of lists) of variables or constants, based on provided indices.
+
+    Args:
+        model (cp_model.CpModel): The constraint programming model to which the constraints will be added.
+        indexes (tuple[cp_model.IntVar, cp_model.IntVar]): A tuple containing two variables representing the row and column indices used for selecting an element from the `variables` list.
+        variables (list[list[int | cp_model.IntVar]]): A 2D list where each element is either an integer constant or an integer variable (cp_model.IntVar).
+        target (cp_model.IntVar): The target variable that should match the selected value from the `variables` list.
+
+    Returns:
+        None
+
+    Notes:
+        - The `indexes` tuple variables should have domains that correspond to valid indices for the `variables` list.
+        - The function generates intermediate variables and constraints to model the 2D element selection process.
+    """
+    op_id = uuid.uuid4()
+    subindices = [model.new_int_var(0, len(l) - 1, f"{op_id}_subindex_{i}") for i, l in enumerate(variables)]
+    subtargets = [
+        model.new_int_var_from_domain(cp_model.Domain.from_values(l), f"{op_id}_subtarget_{i}") if all(isinstance(l_, int) for l_ in l)
+        else model.new_int_var_from_domain(std_domain(), f"{op_id}_subtarget_{i}") 
+        for i, l in enumerate(variables)
+    ]
+    for subvars, subindex, subtarget in zip(variables, subindices, subtargets):
+        model.add_element(subindex, subvars, subtarget)
+    model.add_element(indexes[0], subindices, indexes[1])
+    model.add_element(indexes[0], subtargets, target)
