@@ -21,7 +21,7 @@ class MultiSequence[E](pydantic.BaseModel, abc.Sequence[E]):
 
     def __len__(self) -> int:
         return len(self.seq)
-    
+
     def index_tuple_to_int(self, index: tuple[int, ...]) -> int:
         """Converts a tuple of indices to a single integer index.
 
@@ -31,8 +31,8 @@ class MultiSequence[E](pydantic.BaseModel, abc.Sequence[E]):
         Returns:
             int: The converted integer index.
         """
-        return sum(index[i] * math.prod(self.shape[i + 1:]) for i in range(len(index)))
-    
+        return sum(index[i] * math.prod(self.shape[i + 1 :]) for i in range(len(index)))
+
     def index_int_to_tuple(self, index: int) -> tuple[int, ...]:
         """Converts an integer index to a tuple of indices based on the shape of the multi-sequence.
 
@@ -42,7 +42,10 @@ class MultiSequence[E](pydantic.BaseModel, abc.Sequence[E]):
         Returns:
             tuple[int, ...]: A tuple of indices representing the position in the multi-sequence.
         """
-        return tuple((index // math.prod(self.shape[i + 1:])) % self.shape[i] for i in range(len(self.shape)))
+        return tuple(
+            (index // math.prod(self.shape[i + 1 :])) % self.shape[i]
+            for i in range(len(self.shape))
+        )
 
     @typing.overload
     def __getitem__(self, index: int) -> E:
@@ -55,7 +58,7 @@ class MultiSequence[E](pydantic.BaseModel, abc.Sequence[E]):
             E: The element at the specified index.
         """
         ...
-    
+
     @typing.overload
     def __getitem__(self, index: slice) -> abc.Sequence[E]:
         """Get a sequence of elements from the multi-sequence based on the given slice.
@@ -87,7 +90,7 @@ class MultiSequence[E](pydantic.BaseModel, abc.Sequence[E]):
             return self.seq[self.index_tuple_to_int(index)]
         else:
             raise TypeError("Invalid index type")
-    
+
     def __setitem__(self, index: int, value: E) -> None:
         """Set the value at the specified index in the multi-sequence.
 
@@ -99,7 +102,7 @@ class MultiSequence[E](pydantic.BaseModel, abc.Sequence[E]):
             None: This function does not return anything.
         """
         self.seq[index] = value
-    
+
     def iter(self) -> abc.Iterator[E]:
         """Returns an iterator over the elements of the multi-sequence.
 
@@ -107,8 +110,10 @@ class MultiSequence[E](pydantic.BaseModel, abc.Sequence[E]):
             abc.Iterator[E]: An iterator over the elements of the multi-sequence.
         """
         return iter(self.seq)
-    
-    def neighbors(self, index: int | tuple[int, ...], axis: int) -> tuple[E | None, E | None]:
+
+    def neighbors(
+        self, index: int | tuple[int, ...], axis: int
+    ) -> tuple[E | None, E | None]:
         """Returns the neighboring elements of the given index along the specified axis.
 
         Args:
@@ -122,6 +127,14 @@ class MultiSequence[E](pydantic.BaseModel, abc.Sequence[E]):
             index = self.index_int_to_tuple(index)
         if not 0 <= axis < len(self.shape):
             raise ValueError("Axis out of bounds.")
-        left = None if index[axis] == 0 else self[index[:axis] + (index[axis] - 1,) + index[axis + 1:]]
-        right = None if index[axis] == self.shape[axis] - 1 else self[index[:axis] + (index[axis] + 1,) + index[axis + 1:]]
+        left = (
+            None
+            if index[axis] == 0
+            else self[index[:axis] + (index[axis] - 1,) + index[axis + 1 :]]
+        )
+        right = (
+            None
+            if index[axis] == self.shape[axis] - 1
+            else self[index[:axis] + (index[axis] + 1,) + index[axis + 1 :]]
+        )
         return left, right

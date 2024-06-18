@@ -7,9 +7,10 @@ from ortools.sat.python import cp_model
 
 # Domain utilities
 
+
 def large_domain() -> cp_model.Domain:
     """Returns a domain for 48-bit integers."""
-    return cp_model.Domain(-2 ** 47, 2 ** 47 - 1)
+    return cp_model.Domain(-(2**47), 2**47 - 1)
 
 
 def std_domain() -> cp_model.Domain:
@@ -33,13 +34,13 @@ SCALE_FACTOR = 1000
 
 
 def s_multiply(
-        model: cp_model.CpModel,
-        target: cp_model.IntVar,
-        a: cp_model.IntVar | int,
-        b: cp_model.IntVar | int,
-        *,
-        scale_factor: int = SCALE_FACTOR,
-        domain: cp_model.Domain | None = None
+    model: cp_model.CpModel,
+    target: cp_model.IntVar,
+    a: cp_model.IntVar | int,
+    b: cp_model.IntVar | int,
+    *,
+    scale_factor: int = SCALE_FACTOR,
+    domain: cp_model.Domain | None = None,
 ) -> None:
     """Multiplies two scaled integers or integer variables and returns the scaled product.
 
@@ -59,13 +60,13 @@ def s_multiply(
 
 
 def s_divide(
-        model: cp_model.CpModel,
-        target: cp_model.IntVar,
-        a: cp_model.IntVar | int,
-        b: cp_model.IntVar | int,
-        *,
-        scale_factor: int = SCALE_FACTOR,
-        domain: cp_model.Domain | None = None
+    model: cp_model.CpModel,
+    target: cp_model.IntVar,
+    a: cp_model.IntVar | int,
+    b: cp_model.IntVar | int,
+    *,
+    scale_factor: int = SCALE_FACTOR,
+    domain: cp_model.Domain | None = None,
 ) -> None:
     """Divides the scaled numerator by the given scaled divisor and returns the scaled quotient.
 
@@ -79,19 +80,21 @@ def s_divide(
     """
     op_id = uuid.uuid4()
     domain = domain if isinstance(domain, cp_model.Domain) else std_domain()
-    scaled_numerator = model.new_int_var_from_domain(domain, f"{op_id}_scaled_numerator")
+    scaled_numerator = model.new_int_var_from_domain(
+        domain, f"{op_id}_scaled_numerator"
+    )
     model.add_multiplication_equality(scaled_numerator, [a, scale_factor])
     model.add_division_equality(target, scaled_numerator, b)
 
 
 def s_sqrt(
-        model: cp_model.CpModel,
-        target: cp_model.IntVar,
-        a: cp_model.IntVar,
-        *,
-        scale_factor: int = SCALE_FACTOR,
-        domain: cp_model.Domain | None = None,
-        iter: int = 10
+    model: cp_model.CpModel,
+    target: cp_model.IntVar,
+    a: cp_model.IntVar,
+    *,
+    scale_factor: int = SCALE_FACTOR,
+    domain: cp_model.Domain | None = None,
+    iter: int = 10,
 ) -> None:
     """Calculates the square root of a given integer using Heron's method.
 
@@ -114,7 +117,9 @@ def s_sqrt(
         s_divide(model, q, a, guess, scale_factor=scale_factor, domain=domain)
         model.add(s == guess + q)
 
-        new_guess = model.new_int_var_from_domain(guess_domain, f"{op_id}_guess_{i + 1}")
+        new_guess = model.new_int_var_from_domain(
+            guess_domain, f"{op_id}_guess_{i + 1}"
+        )
         model.add_division_equality(new_guess, s, 2)
         guess = new_guess
     model.add_abs_equality(target, guess)
@@ -122,7 +127,13 @@ def s_sqrt(
 
 # Other
 
-def add_element_2d(model: cp_model.CpModel, indexes: tuple[cp_model.IntVar, cp_model.IntVar], variables: list[list[int | cp_model.IntVar]], target: cp_model.IntVar) -> None:
+
+def add_element_2d(
+    model: cp_model.CpModel,
+    indexes: tuple[cp_model.IntVar, cp_model.IntVar],
+    variables: list[list[int | cp_model.IntVar]],
+    target: cp_model.IntVar,
+) -> None:
     """Adds constraints to a given CP-SAT model to enforce that a target variable matches the value selected from a 2D list (list of lists) of variables or constants, based on provided indices.
 
     Args:
@@ -139,11 +150,17 @@ def add_element_2d(model: cp_model.CpModel, indexes: tuple[cp_model.IntVar, cp_m
         - The function generates intermediate variables and constraints to model the 2D element selection process.
     """
     op_id = uuid.uuid4()
-    subindices = [model.new_int_var(0, len(l) - 1, f"{op_id}_subindex_{i}") for i, l in enumerate(variables)]
+    subindices = [
+        model.new_int_var(0, len(varlist) - 1, f"{op_id}_subindex_{i}")
+        for i, varlist in enumerate(variables)
+    ]
     subtargets = [
-        model.new_int_var_from_domain(cp_model.Domain.from_values(l), f"{op_id}_subtarget_{i}") if all(isinstance(l_, int) for l_ in l)
-        else model.new_int_var_from_domain(std_domain(), f"{op_id}_subtarget_{i}") 
-        for i, l in enumerate(variables)
+        model.new_int_var_from_domain(
+            cp_model.Domain.from_values(varlist), f"{op_id}_subtarget_{i}"
+        )
+        if all(isinstance(var, int) for var in varlist)
+        else model.new_int_var_from_domain(std_domain(), f"{op_id}_subtarget_{i}")
+        for i, varlist in enumerate(variables)
     ]
     for subvars, subindex, subtarget in zip(variables, subindices, subtargets):
         model.add_element(subindex, subvars, subtarget)

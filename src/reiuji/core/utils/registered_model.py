@@ -36,15 +36,20 @@ class RegisteredModel(pydantic.BaseModel):
             else:
                 package = cls.__module__
                 module = ""
-            cls.reg_base.registry[cls.reg_key] = ClsInfo(package=package, module=f".{module}", name=cls.__name__)
+            cls.reg_base.registry[cls.reg_key] = ClsInfo(
+                package=package, module=f".{module}", name=cls.__name__
+            )
 
 
-def model_validate[T: RegisteredModel](base_model: type[T]) -> abc.Callable[[typing.Any], T]:
+def model_validate[T: RegisteredModel](
+    base_model: type[T],
+) -> abc.Callable[[typing.Any], T]:
     def validator(obj: typing.Any) -> T:
         reg_key = getattr(obj, "reg_key") if hasattr(obj, "reg_key") else obj["reg_key"]
         if reg_key not in base_model.registry:
             raise ValueError(f"Registered model '{reg_key}' does not exist.")
         return base_model.registry[reg_key].import_().model_validate(obj)
+
     return validator
 
 
@@ -55,4 +60,5 @@ def model_dump[T: RegisteredModel](base_model: type[T]) -> abc.Callable[[T], dic
         d = base_model.registry[obj.reg_key].import_().model_dump(obj)
         d["reg_key"] = obj.reg_key
         return d
+
     return dump

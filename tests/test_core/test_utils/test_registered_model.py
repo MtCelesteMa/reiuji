@@ -56,12 +56,22 @@ def test_keys() -> None:
     assert rt.RuleB.reg_key == "test.rule_b"
 
 
-def test_validate(parts_dict: list[dict], rules_dict: list[dict], parts: list[rt.BasePart], rules: list[rt.BaseRule]) -> None:
+def test_validate(
+    parts_dict: list[dict],
+    rules_dict: list[dict],
+    parts: list[rt.BasePart],
+    rules: list[rt.BaseRule],
+) -> None:
     assert pydantic.TypeAdapter(list[rt.Part]).validate_python(parts_dict) == parts
     assert pydantic.TypeAdapter(list[rt.Rule]).validate_python(rules_dict) == rules
 
 
-def test_serialize(parts_dict: list[dict], rules_dict: list[dict], parts: list[rt.BasePart], rules: list[rt.BaseRule]) -> None:
+def test_serialize(
+    parts_dict: list[dict],
+    rules_dict: list[dict],
+    parts: list[rt.BasePart],
+    rules: list[rt.BaseRule],
+) -> None:
     assert pydantic.TypeAdapter(list[rt.Part]).dump_python(parts) == parts_dict
     assert pydantic.TypeAdapter(list[rt.Rule]).dump_python(rules) == rules_dict
 

@@ -20,7 +20,9 @@ def test_wrong_shape() -> None:
         MultiSequence(seq=[i for i in range(24)], shape=(2, 3, 4, 5))
 
 
-def test_validation_and_serialization(multi_sequence_dict: dict, multi_sequence: MultiSequence[int]) -> None:
+def test_validation_and_serialization(
+    multi_sequence_dict: dict, multi_sequence: MultiSequence[int]
+) -> None:
     assert MultiSequence.model_validate(multi_sequence_dict) == multi_sequence
     assert MultiSequence.model_dump(multi_sequence) == multi_sequence_dict
 

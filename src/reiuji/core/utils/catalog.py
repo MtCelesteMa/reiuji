@@ -18,7 +18,7 @@ class Catalog[E](pydantic.BaseModel):
             E: The item from the catalog at the specified index.
         """
         return self.catalog[index[0]][index[1]]
-    
+
     def __setitem__(self, index: tuple[str, str], value: E) -> None:
         """Set the value at the specified index in the catalog.
 
@@ -32,7 +32,7 @@ class Catalog[E](pydantic.BaseModel):
         if index[0] not in self.catalog:
             self.catalog[index[0]] = dict()
         self.catalog[index[0]][index[1]] = value
-    
+
     def as_list(self) -> list[list[E]]:
         """Returns a nested list representation of the catalog.
 
@@ -41,6 +41,7 @@ class Catalog[E](pydantic.BaseModel):
         Returns:
             list[list[E]]: A nested list representation of the catalog.
         """
-        return [[self.catalog[key][subkey] for subkey in self.catalog[key]] for key in self.catalog]
-    
-    
+        return [
+            [self.catalog[key][subkey] for subkey in self.catalog[key]]
+            for key in self.catalog
+        ]

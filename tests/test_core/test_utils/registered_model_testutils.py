@@ -33,6 +33,7 @@ Part = typing.Annotated[
     PlainSerializer(registered_model.model_dump(BasePart)),
 ]
 
+
 class BaseRule(registered_model.RegisteredModel):
     pass
 

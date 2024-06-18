@@ -7,7 +7,6 @@ from ortools.sat.python import cp_model
 from reiuji.core.utils import cp_utils
 
 
-
 def test_multiply() -> None:
     model = cp_model.CpModel()
     a = model.new_int_var_from_domain(cp_utils.std_domain(), "a")
@@ -25,7 +24,9 @@ def test_multiply() -> None:
 def test_divide_pos() -> None:
     model = cp_model.CpModel()
     a = model.new_int_var_from_domain(cp_utils.std_domain(), "a")
-    b = model.new_int_var_from_domain(cp_utils.std_domain().intersection_with(cp_utils.nonzero_domain()), "b")
+    b = model.new_int_var_from_domain(
+        cp_utils.std_domain().intersection_with(cp_utils.nonzero_domain()), "b"
+    )
     quotient = model.new_int_var_from_domain(cp_utils.std_domain(), "quotient")
     model.add(a == 10 * cp_utils.SCALE_FACTOR)
     model.add(b == 5 * cp_utils.SCALE_FACTOR)
@@ -39,7 +40,9 @@ def test_divide_pos() -> None:
 def test_divide_neg() -> None:
     model = cp_model.CpModel()
     a = model.new_int_var_from_domain(cp_utils.std_domain(), "a")
-    b = model.new_int_var_from_domain(cp_utils.std_domain().intersection_with(cp_utils.nonzero_domain()), "b")
+    b = model.new_int_var_from_domain(
+        cp_utils.std_domain().intersection_with(cp_utils.nonzero_domain()), "b"
+    )
     quotient = model.new_int_var_from_domain(cp_utils.std_domain(), "quotient")
     model.add(a == 10 * cp_utils.SCALE_FACTOR)
     model.add(b == -5 * cp_utils.SCALE_FACTOR)
@@ -65,8 +68,14 @@ def test_sqrt() -> None:
 def test_add_element_2d() -> None:
     model = cp_model.CpModel()
     variables = [[1, 4, 2], [3, 5]]
-    indexes = model.new_int_var(0, len(variables) - 1, "index_0"), model.new_int_var(0, max(len(v) for v in variables) - 1, "index_1")
-    target = model.new_int_var_from_domain(cp_model.Domain.from_values(list(itertools.chain.from_iterable(variables))), "target")
+    indexes = (
+        model.new_int_var(0, len(variables) - 1, "index_0"),
+        model.new_int_var(0, max(len(v) for v in variables) - 1, "index_1"),
+    )
+    target = model.new_int_var_from_domain(
+        cp_model.Domain.from_values(list(itertools.chain.from_iterable(variables))),
+        "target",
+    )
     cp_utils.add_element_2d(model, indexes, variables, target)
     model.maximize(target)
     solver = cp_model.CpSolver()
