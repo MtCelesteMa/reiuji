@@ -1,8 +1,8 @@
 """A multi-dimensional sequence."""
 
+import math
 import typing
 from collections import abc
-import math
 
 import pydantic
 

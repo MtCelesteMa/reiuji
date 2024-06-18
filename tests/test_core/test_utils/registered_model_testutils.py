@@ -2,8 +2,8 @@
 
 import typing
 
-from pydantic.functional_validators import PlainValidator
 from pydantic.functional_serializers import PlainSerializer
+from pydantic.functional_validators import PlainValidator
 
 from reiuji.core.utils import registered_model
 

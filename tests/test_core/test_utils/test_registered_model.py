@@ -1,9 +1,8 @@
 """Tests for the `reiuji.core.utils.registered_model` module."""
 
 import pydantic
-
-import registered_model_testutils as rt
 import pytest
+import registered_model_testutils as rt
 
 
 @pytest.fixture

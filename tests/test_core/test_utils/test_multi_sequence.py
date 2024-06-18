@@ -1,7 +1,8 @@
 """Tests for the MultiSequence class."""
 
-import pytest
 import pydantic
+import pytest
+
 from reiuji.core.utils.multi_sequence import MultiSequence
 
 

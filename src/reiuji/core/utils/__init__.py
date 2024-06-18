@@ -1,8 +1,5 @@
 """Utilities for Reiuji."""
 
-from . import multi_sequence
-from . import cp_utils
-from . import registered_model
-from . import catalog
+from . import catalog, cp_utils, multi_sequence, registered_model
 
 __all__ = ["multi_sequence", "cp_utils", "registered_model", "catalog"]

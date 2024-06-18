@@ -1,8 +1,8 @@
 """Registered models for Reiuji."""
 
+import importlib
 import typing
 from collections import abc
-import importlib
 
 import pydantic
 

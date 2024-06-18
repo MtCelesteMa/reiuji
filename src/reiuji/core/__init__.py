@@ -1,5 +1,5 @@
 """Core module of Reiuji."""
 
-from . import utils
+from . import core, utils
 
-__all__ = ["utils"]
+__all__ = ["utils", "core"]

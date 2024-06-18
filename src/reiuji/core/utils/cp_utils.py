@@ -4,7 +4,6 @@ import uuid
 
 from ortools.sat.python import cp_model
 
-
 # Domain utilities
 
 
