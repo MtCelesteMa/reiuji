@@ -1,7 +1,5 @@
 """Tests for the `reiuji.core.utils.cp_utils` module."""
 
-import itertools
-
 from ortools.sat.python import cp_model
 
 from reiuji.core.utils import cp_utils
@@ -63,24 +61,3 @@ def test_sqrt() -> None:
     status = solver.solve(model)
     assert status == cp_model.OPTIMAL
     assert solver.value(target) == 5 * cp_utils.SCALE_FACTOR
-
-
-def test_add_element_2d() -> None:
-    model = cp_model.CpModel()
-    variables = [[1, 4, 2], [3, 5]]
-    indexes = (
-        model.new_int_var(0, len(variables) - 1, "index_0"),
-        model.new_int_var(0, max(len(v) for v in variables) - 1, "index_1"),
-    )
-    target = model.new_int_var_from_domain(
-        cp_model.Domain.from_values(list(itertools.chain.from_iterable(variables))),
-        "target",
-    )
-    cp_utils.add_element_2d(model, indexes, variables, target)
-    model.maximize(target)
-    solver = cp_model.CpSolver()
-    status = solver.solve(model)
-    assert status == cp_model.OPTIMAL
-    assert solver.value(indexes[0]) == 1
-    assert solver.value(indexes[1]) == 1
-    assert solver.value(target) == 5

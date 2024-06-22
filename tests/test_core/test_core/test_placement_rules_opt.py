@@ -73,7 +73,7 @@ def test_cp_opt(
     for rule in rules:
         model = cp_model.CpModel()
         neighbors = [
-            placement_rules.CPNeighbor(
+            placement_rules.CPSignature(
                 id=model.new_int_var(0, len(mapping) - 1, str(uuid.uuid4())),
                 active=model.new_bool_var(str(uuid.uuid4())),
             )
@@ -87,7 +87,7 @@ def test_cp_opt(
         assert status == cp_model.OPTIMAL
         assert rule.is_satisfied(
             [
-                placement_rules.Neighbor(
+                placement_rules.Signature(
                     name=mapping[solver.value(neighbors[i].id)][0],
                     type=mapping[solver.value(neighbors[i].id)][1],
                     active=bool(solver.value(neighbors[i].active)),

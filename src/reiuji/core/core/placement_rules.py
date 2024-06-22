@@ -13,16 +13,14 @@ from pydantic.functional_validators import PlainValidator
 
 from .. import utils
 
-# Base classes
 
-
-class Neighbor(pydantic.BaseModel):
+class Signature(pydantic.BaseModel):
     name: str
     type: str
     active: bool = pydantic.Field(default=False)
 
 
-class CPNeighbor(pydantic.BaseModel):
+class CPSignature(pydantic.BaseModel):
     model_config = pydantic.ConfigDict(arbitrary_types_allowed=True)
 
     id: cp_model.IntVar
@@ -31,13 +29,13 @@ class CPNeighbor(pydantic.BaseModel):
 
 class BasePlacementRule(utils.registered_model.RegisteredModel, ABC):
     @abstractmethod
-    def is_satisfied(self, neighbors: list[Neighbor]) -> bool: ...
+    def is_satisfied(self, neighbors: list[Signature]) -> bool: ...
 
     @abstractmethod
     def to_cp_model(
         self,
         model: cp_model.CpModel,
-        neighbors: list[CPNeighbor],
+        neighbors: list[CPSignature],
         mapping: list[tuple[str, str]],
         target: cp_model.IntVar,
     ) -> None: ...
@@ -48,8 +46,6 @@ PlacementRule = typing.Annotated[
     PlainValidator(utils.registered_model.model_validate(BasePlacementRule)),
     PlainSerializer(utils.registered_model.model_dump(BasePlacementRule)),
 ]
-
-# Core classes
 
 
 class CountType(enum.StrEnum):
@@ -110,7 +106,7 @@ class AdjacencyPlacementRule(BasePlacementRule, reg_key="core.adjacent"):
                 )
         return self
 
-    def is_satisfied(self, neighbors: list[Neighbor]) -> bool:
+    def is_satisfied(self, neighbors: list[Signature]) -> bool:
         if len(neighbors) % 2 != 0:
             raise ValueError("The number of neighbors must be even.")
         matches = [
@@ -195,7 +191,7 @@ class AdjacencyPlacementRule(BasePlacementRule, reg_key="core.adjacent"):
     def to_cp_model(
         self,
         model: cp_model.CpModel,
-        neighbors: list[CPNeighbor],
+        neighbors: list[CPSignature],
         mapping: list[tuple[str, str]],
         target: cp_model.IntVar,
     ) -> None:
@@ -360,7 +356,7 @@ class CompoundPlacementRule(BasePlacementRule, reg_key="core.compound"):
     subrules: list[PlacementRule]
     logic_type: LogicType
 
-    def is_satisfied(self, neighbors: list[Neighbor]) -> bool:
+    def is_satisfied(self, neighbors: list[Signature]) -> bool:
         if self.logic_type == LogicType.AND:
             return all([subrule.is_satisfied(neighbors) for subrule in self.subrules])
         return any([subrule.is_satisfied(neighbors) for subrule in self.subrules])
@@ -368,7 +364,7 @@ class CompoundPlacementRule(BasePlacementRule, reg_key="core.compound"):
     def to_cp_model(
         self,
         model: cp_model.CpModel,
-        neighbors: list[CPNeighbor],
+        neighbors: list[CPSignature],
         mapping: list[tuple[str, str]],
         target: cp_model.IntVar,
     ) -> None:
